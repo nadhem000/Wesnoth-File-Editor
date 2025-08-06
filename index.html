@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="wesnoth_editor.css">
+		<title>Wesnoth File Editor</title>
+	</head>
+	<body>
+		<div class="editor-text-container">
+			<div class="editor-text-header">
+				<h1 class="editor-text-title" data-i18n="text_editor.title">Wesnoth File Editor</h1>
+				<p class="editor-text-subtitle" data-i18n="text_editor.subtitle">Create and manage Wesnoth scenario files with ease</p>
+				
+				<div class="editor-text-howto">
+					<div class="editor-text-howto-header">
+						<div class="editor-text-howto-title" data-i18n="text_editor.how_to_use">How to Use</div>
+						<div class="editor-text-icon">▼</div>
+					</div>
+					<div class="editor-text-howto-content">
+						<ol>
+							<li data-i18n="text_editor.step1">Define your tags in the Teacher tab with keys and types</li>
+							<li data-i18n="text_editor.step2">Save tags to dictionary using the Save button</li>
+							<li data-i18n="text_editor.step3">Switch to Student tab to create content using defined tags</li>
+							<li data-i18n="text_editor.step4">Click on tags in sidebar to insert templates</li>
+							<li data-i18n="text_editor.step5">Validate files in Tester tab before use</li>
+						</ol>
+					</div>
+				</div>
+			</div>
+			
+			<div class="editor-text-tabs">
+				<div class="editor-text-tab editor-text-active" data-tab="teacher" data-i18n="text_editor.teacher_tab">
+					<span>👨‍🏫</span> Teacher
+				</div>
+				<div class="editor-text-tab" data-tab="student" data-i18n="text_editor.student_tab">
+					<span>👨‍🎓</span> Student
+				</div>
+				<div class="editor-text-tab" data-tab="tester" data-i18n="text_editor.tester_tab">
+					<span>🔍</span> Tester
+				</div>
+			</div>
+			
+			<!-- Enhanced Teacher Tab -->
+			<div class="editor-text-tab-content editor-text-active" id="teacher-tab">
+				<h2 class="editor-text-section-title" data-i18n="text_editor.teacher_title">Tag Definition</h2>
+				
+				<div class="editor-text-dictionary">
+					<div class="editor-text-dictionary-header">
+						<div class="editor-text-dictionary-title" data-i18n="text_editor.dictionary">Dictionary</div>
+						<div class="editor-text-icon">▼</div>
+					</div>
+					<div class="editor-text-dictionary-content">
+						<p data-i18n="text_editor.dictionary_content">Define your tags and their structure here. Each tag should have keys with specified types.</p>
+						<div class="editor-text-status">
+							Currently defined tags: <span id="editor-text-tag-list"></span>
+						</div>
+						
+						<table class="editor-text-teacher-tag-table">
+							<thead>
+								<tr>
+									<th>Tag Name</th>
+									<th>Keys</th>
+									<th>Nested Tags</th>
+									<th>Actions</th>
+								</tr>
+							</thead>
+							<tbody id="editor-text-teacher-tag-table-body">
+								<tr>
+									<td>[part]</td>
+									<td>
+										<span class="editor-text-teacher-badge">story</span>
+										<span class="editor-text-mandatory-badge editor-text-mandatory">M</span>
+										<span class="editor-text-mandatory-badge editor-text-official">O</span>
+										<span class="editor-text-teacher-badge">image</span>
+										<span class="editor-text-mandatory-badge editor-text-optional">O</span>
+										<span class="editor-text-mandatory-badge editor-text-official">O</span>
+									</td>
+									<td class="editor-text-teacher-actions">
+										<button class="editor-text-teacher-action-btn editor-text-teacher-action-edit">✏️ Edit</button>
+										<button class="editor-text-teacher-action-btn editor-text-teacher-action-delete">🗑️ Delete</button>
+									</td>
+								</tr>
+								<tr>
+									<td>[variable]</td>
+									<td>
+										<span class="editor-text-teacher-badge">name</span>
+										<span class="editor-text-mandatory-badge editor-text-mandatory">M</span>
+										<span class="editor-text-mandatory-badge editor-text-official">O</span>
+										<span class="editor-text-teacher-badge">value</span>
+										<span class="editor-text-mandatory-badge editor-text-mandatory">M</span>
+										<span class="editor-text-mandatory-badge editor-text-umc">U</span>
+										<span class="editor-text-teacher-badge">greater_than</span>
+										<span class="editor-text-mandatory-badge editor-text-optional">O</span>
+										<span class="editor-text-mandatory-badge editor-text-umc">U</span>
+									</td>
+									<td class="editor-text-teacher-actions">
+										<button class="editor-text-teacher-action-btn editor-text-teacher-action-edit">✏️ Edit</button>
+										<button class="editor-text-teacher-action-btn editor-text-teacher-action-delete">🗑️ Delete</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				
+				<!-- NEW MANUAL ENTRY SECTION -->
+				<div class="editor-text-manual-entry">
+					<div class="editor-text-manual-header">
+						<div class="editor-text-manual-title">Manual Tag Entry</div>
+					</div>
+					
+					<div class="editor-text-manual-instructions">
+						<h4>Tag Definition Syntax</h4>
+						<p>Enter your tags using the following format:</p>
+						<pre>[tag_name]
+							key1 = "default_value" (type, mandatory, scope)
+							key2 = "default_value" (type, mandatory, scope)
+							nested_tags="Comma  separated list"
+						[/tag_name]</pre>
+						<p>Example with comments:</p>
+						<pre>[foreach] # This is a tag comment
+							array="" (string, mandatory, official) # This is a key comment
+							nested_tags="do"
+						[/foreach] # End of foreach</pre>
+						<p>Supported types: <span class="editor-text-syntax-highlight">string</span>, <span class="editor-text-syntax-highlight">translatable</span>, <span class="editor-text-syntax-highlight">integer</span>, <span class="editor-text-syntax-highlight">numeric</span>, <span class="editor-text-syntax-highlight">boolean</span>, <span class="editor-text-syntax-highlight">path</span></p>
+						<p>Mandatory: <span class="editor-text-syntax-highlight">mandatory</span> or <span class="editor-text-syntax-highlight">optional</span></p>
+						<p>Scope: <span class="editor-text-syntax-highlight">official</span> or <span class="editor-text-syntax-highlight">umc</span></p>
+					</div>
+					
+					<textarea class="editor-text-manual-textarea" id="editor-text-manual-input" placeholder="Paste your tag definitions here...">[foreach]
+						array="" (string, mandatory, official)
+						nested_tags="do"
+					[/foreach]</textarea>
+					
+					<div class="editor-text-form-buttons">
+						<button class="editor-text-button editor-text-button-action" 
+						id="editor-text-parse-btn" 
+						data-i18n="text_editor.parse_form">
+							🔄 Parse & Update
+						</button>
+						<button class="editor-text-button editor-text-clear-btn" 
+						id="editor-text-clear-btn"
+						data-i18n="text_editor.clear_form">
+							🧹 Clear
+						</button>
+						<button class="editor-text-button editor-text-button-action" 
+						id="editor-text-save-manual-btn"
+						data-i18n="text_editor.save_entry">
+							💾 Save Entry
+						</button>
+					</div>
+					
+					<div class="editor-text-teacher-form-container">
+						<div class="editor-text-teacher-form-header">
+							<div class="editor-text-teacher-form-header-icon">📝</div>
+							<h3 data-i18n="text_editor.define_new_tag">Define New Tag</h3>
+						</div>
+						
+						<div class="editor-text-form-grid">
+							<div class="editor-text-form-group">
+								<label for="editor-text-tag-name">Tag Name</label>
+								<input type="text" id="editor-text-tag-name" placeholder="Enter tag name (e.g., part)" value="part">
+							</div>
+							
+							<div class="editor-text-form-group">
+								<label for="editor-text-tag-description">Description</label>
+								<input type="text" id="editor-text-tag-description" placeholder="Tag description (optional)" value="Story segment">
+							</div>
+							
+							<div class="editor-text-form-group">
+								<label>Nested Tags</label>
+								<input type="text" id="editor-text-nested-tags" placeholder="Comma separated (e.g., do, then)">
+							</div>
+						</div>
+						
+						<h4 style="margin: 20px 0 15px; color: var(--editor-text-teacher-accent); display: flex; align-items: center; gap: 10px;">
+							<span>🔑</span> 
+							<span data-i18n="text_editor.tag_keys">Tag Keys</span>
+						</h4>
+						
+						<div id="editor-text-keys-container">
+							<div class="editor-text-key-row">
+								<div class="editor-text-form-group">
+									<label>Key Name</label>
+									<input type="text" class="editor-text-key-name" placeholder="story" value="story">
+								</div>
+								
+								<div class="editor-text-form-group">
+									<label>Default Value</label>
+									<input type="text" class="editor-text-key-default" placeholder='""' value='""'>
+								</div>
+								
+								<div class="editor-text-form-group">
+									<label>Type</label>
+									<select class="editor-text-key-type">
+										<option value="string">String</option>
+										<option value="translatable" selected>Translatable String</option>
+										<option value="integer">Integer</option>
+										<option value="numeric">Numeric</option>
+										<option value="boolean">Boolean</option>
+										<option value="path">Path</option>
+									</select>
+								</div>
+								
+								<div class="editor-text-form-group">
+									<label>Mandatory</label>
+									<select class="editor-text-key-mandatory">
+										<option value="mandatory" selected>Mandatory</option>
+										<option value="optional">Optional</option>
+									</select>
+								</div>
+								
+								<div class="editor-text-form-group">
+									<label>Scope</label>
+									<select class="editor-text-key-scope">
+										<option value="official" selected>Official</option>
+										<option value="umc">UMC</option>
+									</select>
+								</div>
+								
+								<div class="editor-text-form-group">
+									<label>Comment</label>
+									<input type="text" class="editor-text-key-comment" placeholder="Comment (optional)" value="Story text">
+								</div>
+								
+								<button class="editor-text-remove-key">×</button>
+							</div>
+							
+							<div class="editor-text-key-row">
+								<div class="editor-text-form-group">
+									<label>Key Name</label>
+									<input type="text" class="editor-text-key-name" placeholder="image" value="image">
+								</div>
+								
+								<div class="editor-text-form-group">
+									<label>Default Value</label>
+									<input type="text" class="editor-text-key-default" placeholder='""' value='""'>
+								</div>
+								
+								<div class="editor-text-form-group">
+									<label>Type</label>
+									<select class="editor-text-key-type">
+										<option value="string">String</option>
+										<option value="translatable">Translatable String</option>
+										<option value="integer">Integer</option>
+										<option value="numeric">Numeric</option>
+										<option value="boolean">Boolean</option>
+										<option value="path" selected>Path</option>
+									</select>
+								</div>
+								
+								<div class="editor-text-form-group">
+									<label>Mandatory</label>
+									<select class="editor-text-key-mandatory">
+										<option value="mandatory">Mandatory</option>
+										<option value="optional" selected>Optional</option>
+									</select>
+								</div>
+								
+								<div class="editor-text-form-group">
+									<label>Scope</label>
+									<select class="editor-text-key-scope">
+										<option value="official" selected>Official</option>
+										<option value="umc">UMC</option>
+									</select>
+								</div>
+								
+								<div class="editor-text-form-group">
+									<label>Comment</label>
+									<input type="text" class="editor-text-key-comment" placeholder="Comment (optional)" value="Story text">
+								</div>
+								
+								<button class="editor-text-remove-key">×</button>
+							</div>
+						</div>
+						
+						<div class="editor-text-form-button-group">
+							<button class="editor-text-button editor-text-add-key-btn" id="editor-text-add-key">+ Add Key</button>
+							
+							<!-- NEW BUTTONS -->
+							<div class="editor-text-form-buttons">
+								<button class="editor-text-button editor-text-button-action" 
+								id="editor-text-parse-form-btn" 
+								data-i18n="text_editor.parse_form">
+									🔄 Parse & Update
+								</button>
+								<button class="editor-text-button editor-text-clear-btn" 
+								id="editor-text-clear-form-btn"
+								data-i18n="text_editor.clear_form">
+									🧹 Clear
+								</button>
+								<button class="editor-text-button editor-text-button-action" 
+								id="editor-text-save-entry-btn"
+								data-i18n="text_editor.save_entry">
+									💾 Save Entry
+								</button>
+							</div>
+						</div>
+						
+						<div class="editor-text-teacher-preview">
+							<div class="editor-text-teacher-preview-header">Preview</div>
+							<pre id="editor-text-tag-preview">[part]
+								story="" (string/translatable, mandatory, official)
+								image="" (path, optional, official)
+							[/part]</pre>
+						</div>
+					</div>
+					
+					<div class="editor-text-options">
+						<div class="editor-text-option" data-i18n="text_editor.option_color">
+							<span>🎨</span> <span data-i18n="text_editor.option_color">Color</span>
+							<div class="editor-text-tooltip" data-i18n="text_editor.tooltip_color">Change editor color scheme</div>
+						</div>
+						
+						<div class="editor-text-option" data-i18n="text_editor.option_indentation">
+							<span>↹</span> <span data-i18n="text_editor.option_indentation">Indentation</span>
+							<div class="editor-text-tooltip" data-i18n="text_editor.tooltip_indentation">Adjust indentation settings</div>
+						</div>
+						<div class="editor-text-option" id="editor-text-export-option" data-i18n="text_editor.option_export">
+							<span>💾</span> <span data-i18n="text_editor.option_export">Export</span> <span>▾</span>
+							<div class="editor-text-tooltip" data-i18n="text_editor.tooltip_export">Export your tag definitions</div>
+							<div class="editor-text-dropdown">
+								<div class="editor-text-dropdown-item" data-format="cfg" data-i18n="text_editor.export_cfg">
+									<span>📄</span> <span data-i18n="text_editor.export_cfg">.cfg</span>
+								</div>
+								<div class="editor-text-dropdown-item" data-format="json" data-i18n="text_editor.export_json">
+									<span>📊</span> <span data-i18n="text_editor.export_json">.json</span>
+								</div>
+								<div class="editor-text-dropdown-item" data-format="txt" data-i18n="text_editor.export_txt">
+									<span>📝</span> <span data-i18n="text_editor.export_txt">.txt</span>
+								</div>
+							</div>
+						</div>
+						<div class="editor-text-option" id="editor-text-import-option" data-i18n="text_editor.option_import">
+							<span>📂</span> <span data-i18n="text_editor.option_import">Import</span> <span>▾</span>
+							<div class="editor-text-tooltip" data-i18n="text_editor.tooltip_import">Import tag definitions</div>
+							<div class="editor-text-dropdown">
+								<div class="editor-text-dropdown-item" data-format="cfg" data-i18n="text_editor.import_cfg">
+									<span>📄</span> <span data-i18n="text_editor.import_cfg">.cfg</span>
+								</div>
+								<div class="editor-text-dropdown-item" data-format="json" data-i18n="text_editor.import_json">
+									<span>📊</span> <span data-i18n="text_editor.import_json">.json</span>
+								</div>
+								<div class="editor-text-dropdown-item" data-format="txt" data-i18n="text_editor.import_txt">
+									<span>📝</span> <span data-i18n="text_editor.import_txt">.txt</span>
+								</div>
+							</div>
+						</div>
+						<div class="editor-text-option" data-i18n="text_editor.option_settings">
+							<span>⚙️</span> <span data-i18n="text_editor.option_settings">Settings</span>
+							<div class="editor-text-tooltip" data-i18n="text_editor.tooltip_settings">Editor preferences</div>
+						</div>
+					</div>
+					
+					<div class="editor-text-buttons">
+						<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.undo">↩️ Undo</button>
+						<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.redo">↪️ Redo</button>
+					</div>
+					<div class="editor-text-modal" id="editor-text-save-modal" style="display: none;">
+						<div class="editor-text-modal-content">
+							<h3 data-i18n="text_editor.modal_title">Tag Already Exists</h3>
+							<p data-i18n="text_editor.modal_message">The tag <span id="editor-text-modal-tag-name"></span> already exists. How would you like to proceed?</p>
+							<div class="editor-text-modal-buttons">
+								<button class="editor-text-button editor-text-button-action" id="editor-text-modal-replace">
+									<span>🔄</span> <span data-i18n="text_editor.modal_replace">Replace Existing</span>
+								</button>
+								<button class="editor-text-button editor-text-button-action" id="editor-text-modal-append">
+									<span>➕</span> <span data-i18n="text_editor.modal_append">Add New Version</span>
+								</button>
+								<button class="editor-text-button editor-text-button-cancel" id="editor-text-modal-cancel">
+									<span>✖️</span> <span data-i18n="text_editor.modal_cancel">Cancel</span>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="editor-text-modal" id="editor-text-color-modal" style="display: none;">
+						<div class="editor-text-modal-content">
+							<h3 data-i18n="text_editor.style_modal_title">Style Assignment</h3>
+							
+							<div class="editor-text-style-container" id="editor-text-style-container">
+								<h4>Color by Type</h4>
+								<div class="editor-text-style-item">
+									<label>String</label>
+									<input type="color" class="editor-text-color-picker" data-type="string" value="#000000">
+								</div>
+								<div class="editor-text-style-item">
+									<label>Translatable</label>
+									<input type="color" class="editor-text-color-picker" data-type="translatable" value="#000000">
+								</div>
+								<div class="editor-text-style-item">
+									<label>Integer</label>
+									<input type="color" class="editor-text-color-picker" data-type="integer" value="#000000">
+								</div>
+								<div class="editor-text-style-item">
+									<label>Numeric</label>
+									<input type="color" class="editor-text-color-picker" data-type="numeric" value="#000000">
+								</div>
+								<div class="editor-text-style-item">
+									<label>Boolean</label>
+									<input type="color" class="editor-text-color-picker" data-type="boolean" value="#000000">
+								</div>
+								<div class="editor-text-style-item">
+									<label>Path</label>
+									<input type="color" class="editor-text-color-picker" data-type="path" value="#000000">
+								</div>
+								
+								<h4>Bold by Mandatory</h4>
+								<div class="editor-text-style-item">
+									<label>
+										<input type="checkbox" class="editor-text-bold-checkbox" data-mandatory="mandatory">
+										Mandatory Keys
+									</label>
+								</div>
+								<div class="editor-text-style-item">
+									<label>
+										<input type="checkbox" class="editor-text-bold-checkbox" data-mandatory="optional">
+										Optional Keys
+									</label>
+								</div>
+								
+								<h4>Italic by Scope</h4>
+								<div class="editor-text-style-item">
+									<label>
+										<input type="checkbox" class="editor-text-italic-checkbox" data-scope="official">
+										Official Scope
+									</label>
+								</div>
+								<div class="editor-text-style-item">
+									<label>
+										<input type="checkbox" class="editor-text-italic-checkbox" data-scope="umc">
+										UMC Scope
+									</label>
+								</div>
+							</div>
+						</div>
+						
+						<div class="editor-text-modal-buttons">
+							<button class="editor-text-button editor-text-button-action" id="editor-text-color-reset">
+								<span>🔄</span> <span data-i18n="text_editor.color_reset">Reset to Default</span>
+							</button>
+							<button class="editor-text-button editor-text-button-save" id="editor-text-color-save">
+								<span>💾</span> <span data-i18n="text_editor.color_save">Save Styles</span>
+							</button>
+							<button class="editor-text-button editor-text-button-cancel" id="editor-text-color-cancel">
+								<span>✖️</span> <span data-i18n="text_editor.color_cancel">Cancel</span>
+							</button>
+						</div>
+					</div>
+					<!-- Indentation Settings Modal -->
+					<div class="editor-text-modal" id="editor-text-indentation-modal" style="display: none;">
+						<div class="editor-text-modal-content">
+							<h3 data-i18n="text_editor.indentation_modal_title">Indentation Settings</h3>
+							
+							<div class="editor-text-style-container">
+								<h4>Method</h4>
+								<div class="editor-text-style-item">
+									<label>
+										<input type="radio" name="indent-method" value="tab" checked>
+										Tabs
+									</label>
+									<label>
+										<input type="radio" name="indent-method" value="space">
+										Spaces
+									</label>
+								</div>
+								
+								<h4>Size</h4>
+								<div class="editor-text-style-item">
+									<label>Spaces per indent level:</label>
+									<input type="number" id="editor-text-indent-size" min="1" max="8" value="4">
+								</div>
+								
+								<h4>Tabs per indent level:</h4>
+								<div class="editor-text-style-item">
+									<label>Tab count:</label>
+									<input type="number" id="editor-text-tab-count" min="1" max="4" value="1">
+								</div>
+							</div>
+							
+							<div class="editor-text-modal-buttons">
+								<button class="editor-text-button editor-text-button-action" id="editor-text-indentation-reset">
+									<span>🔄</span> <span data-i18n="text_editor.indentation_reset">Reset to Default</span>
+								</button>
+								<button class="editor-text-button editor-text-button-save" id="editor-text-indentation-save">
+									<span>💾</span> <span data-i18n="text_editor.indentation_save">Save Settings</span>
+								</button>
+								<button class="editor-text-button editor-text-button-cancel" id="editor-text-indentation-cancel">
+									<span>✖️</span> <span data-i18n="text_editor.indentation_cancel">Cancel</span>
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Student Tab -->
+			<div class="editor-text-tab-content" id="student-tab">
+				<h2 class="editor-text-section-title" data-i18n="text_editor.student_title">Content Creation</h2>
+				
+				<div class="editor-text-dictionary">
+					<div class="editor-text-dictionary-header">
+						<div class="editor-text-dictionary-title" data-i18n="text_editor.dictionary">Dictionary</div>
+						<div class="editor-text-icon">▼</div>
+					</div>
+					<div class="editor-text-dictionary-content">
+						<p data-i18n="text_editor.student_dictionary_content">Use the defined tags to create your scenario content. Click on a tag in the sidebar to insert it.</p>
+						<div class="editor-text-status">
+							Tags available: <span id="editor-text-student-tag-list"></span>
+						</div>
+					</div>
+				</div>
+				
+				<div class="editor-text-options">
+					<div class="editor-text-option" data-i18n="text_editor.option_preview">👁️ Preview</div>
+					<div class="editor-text-option" data-i18n="text_editor.option_guides">📖 Guides</div>
+					<div class="editor-text-option" data-i18n="text_editor.option_templates">📋 Templates</div>
+					<div class="editor-text-option" data-action="clear">🧹 Clear</div>
+				</div>
+				
+				<div class="editor-text-main">
+					<div class="editor-text-aside">
+						<div class="editor-text-aside-title" data-i18n="text_editor.available_tags">Available Tags</div>
+						<div class="editor-text-tags-container" id="editor-text-tag-container">
+							<!-- Tags will be dynamically inserted here -->
+						</div>
+					</div>
+					
+					<div class="editor-text-editor">
+						<div class="editor-text-line-numbers" id="editor-text-line-numbers"></div>
+						<div class="editor-text-textarea" id="editor-text-student-display" contenteditable="true">
+						</div>
+					</div>
+				</div>
+				
+				<div class="editor-text-buttons">
+					<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.undo">↩️ Undo</button>
+					<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.redo">↪️ Redo</button>
+				</div>
+			</div>
+			
+			<!-- Tester Tab -->
+			<div class="editor-text-tab-content" id="tester-tab">
+				<h2 class="editor-text-section-title" data-i18n="text_editor.tester_title">File Validation</h2>
+				
+				<div class="editor-text-dictionary">
+					<div class="editor-text-dictionary-header">
+						<div class="editor-text-dictionary-title" data-i18n="text_editor.dictionary">Dictionary</div>
+						<div class="editor-text-icon">▼</div>
+					</div>
+					<div class="editor-text-dictionary-content">
+						<p data-i18n="text_editor.tester_dictionary_content">Validate your scenario files and check for errors or inconsistencies.</p>
+						<div class="editor-text-status">
+							Last validation: <span id="editor-text-validation-result">No validation performed yet</span>
+						</div>
+					</div>
+				</div>
+				
+				<div class="editor-text-options">
+					<div class="editor-text-option" data-i18n="text_editor.option_lint">🧹 Lint</div>
+					<div class="editor-text-option" data-i18n="text_editor.option_simulate">▶️ Simulate</div>
+					<div class="editor-text-option" data-i18n="text_editor.option_debug">🐞 Debug</div>
+					<div class="editor-text-option">📊 Stats</div>
+				</div>
+				
+				<textarea class="editor-text-textarea" id="editor-text-tester-input" placeholder="[part]&#10;story=&quot;Once upon a time...&quot;&#10;image=&quot;images/story.jpg&quot;&#10;[/part]&#10;&#10;[event]&#10;name=&quot;First Encounter&quot;&#10;description=&quot;The heroes meet their first challenge&quot;&#10;trigger=&quot;turn 2&quot;&#10;[/event]"></textarea>
+				
+				<div class="editor-text-buttons">
+					<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.undo">↩️ Undo</button>
+					<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.redo">↪️ Redo</button>
+				</div>
+			</div>
+			
+			<div class="editor-text-footer">
+				Wesnoth File Editor v1.0 • Battle For Wesnoth • All tags and properties are preserved
+			</div>
+		</div>
+		<script src="library-wml.js"></script>
+		<script src="wesnoth_editor.js"></script>
+	</body>
+</html>	
