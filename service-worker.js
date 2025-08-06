@@ -9,12 +9,16 @@ const urlsToCache = [
   '/icon-192x192.png',
   '/icon-512x512.png'
 ];
-if (self.location.protocol === 'file:') {
-  console.log('Skipping service worker for file protocol');
-  return; // Exit service worker execution
-}
 
 self.addEventListener('install', event => {
+  // Handle file protocol inside install handler
+  if (self.location.protocol === 'file:') {
+    console.log('Skipping service worker for file protocol');
+    self.skipWaiting();  // Bypass waiting phase
+    return;  // Exit early from install event
+  }
+
+  // Normal install process for http/https
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
