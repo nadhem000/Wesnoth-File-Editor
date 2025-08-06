@@ -1,6 +1,4 @@
 # Wesnoth-File-Editor
-Here's a concise description and usage guide for your GitHub project:
-
 ### Project Description
 **Wesnoth File Editor** is a web-based tool designed to simplify the creation and management of Battle for Wesnoth scenario files. The application features a three-tab workflow:
 
