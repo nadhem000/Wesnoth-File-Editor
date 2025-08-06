@@ -3,8 +3,8 @@
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#8d6e63">
+		<!-- <link rel="manifest" href="/manifest.json"> -->
+		<meta name="theme-color" content="#8d6e63">
 		<link rel="stylesheet" href="wesnoth_editor.css">
 		<title>Wesnoth File Editor</title>
 	</head>
@@ -13,6 +13,11 @@
 			<div class="editor-text-header">
 				<h1 class="editor-text-title" data-i18n="text_editor.title">Wesnoth File Editor</h1>
 				<p class="editor-text-subtitle" data-i18n="text_editor.subtitle">Create and manage Wesnoth scenario files with ease</p>
+    
+    <!--  INSTALL BUTTON -->
+    <button id="editor-text-install-btn" class="editor-text-button editor-text-button-action" style="margin: 15px auto; padding: 12px 25px; font-size: 1.1rem;">
+        <span>📱</span> Install App
+    </button>
 				
 				<div class="editor-text-howto">
 					<div class="editor-text-howto-header">
@@ -577,17 +582,18 @@
 				Wesnoth File Editor v1.0 • Battle For Wesnoth • All tags and properties are preserved
 			</div>
 		</div>
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(registration => {
-          console.log('ServiceWorker registered');
-        });
-    });
-  }
-</script>
+		<!-- <script>
+			if ('serviceWorker' in navigator) {
+				window.addEventListener('load', () => {
+					navigator.serviceWorker.register('/service-worker.js')
+					.then(registration => {
+						console.log('ServiceWorker registered');
+					});
+				});
+			}
+		</script> -->
 		<script src="library-wml.js"></script>
 		<script src="wesnoth_editor.js"></script>
+		<script src="main.js"></script>
 	</body>
 </html>	

@@ -1181,3 +1181,20 @@ body {
     border-radius: 4px;
     font-family: inherit;
 }
+.editor-text-offline .editor-text-header::after {
+  background: #f44336;
+}
+
+.editor-text-offline::before {
+  content: "Offline Mode - Changes will sync when online";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #f44336;
+  color: white;
+  text-align: center;
+  padding: 10px;
+  z-index: 1000;
+  font-weight: bold;
+}
