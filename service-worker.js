@@ -1,9 +1,10 @@
-const CACHE_NAME = 'wesnoth-editor-v1';
+const CACHE_NAME = 'wesnoth-editor-v2';
 const urlsToCache = [
   '/',
   '/index.html',
   '/wesnoth_editor.css',
   '/wesnoth_editor.js',
+  '/main.js',
   '/library-wml.js',
   '/icon-192x192.png',
   '/icon-512x512.png'
