@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<!-- <link rel="manifest" href="/manifest.json"> -->
+		<link rel="manifest" href="/manifest.json">
 		<meta name="theme-color" content="#8d6e63">
 		<link rel="stylesheet" href="wesnoth_editor.css">
 		<title>Wesnoth File Editor</title>
@@ -592,6 +592,13 @@
 				});
 			}
 		</script> -->
+<script>
+// Fix for local manifest CORS issue
+if (window.location.protocol === 'file:') {
+  const manifestLink = document.querySelector('link[rel="manifest"]');
+  if (manifestLink) manifestLink.remove();
+}
+</script>
 		<script src="library-wml.js"></script>
 		<script src="wesnoth_editor.js"></script>
 		<script src="main.js"></script>

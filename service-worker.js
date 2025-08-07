@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wesnoth-editor-v2';
+const CACHE_NAME = 'wesnoth-editor-v5';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -7,7 +7,8 @@ const urlsToCache = [
   '/main.js',
   '/library-wml.js',
   '/icon-192x192.png',
-  '/icon-512x512.png'
+  '/icon-512x512.png',
+  '/manifest.json'
 ];
 
 self.addEventListener('install', event => {
@@ -25,7 +26,17 @@ self.addEventListener('install', event => {
   );
 });
 
+
 self.addEventListener('fetch', event => {
+  // Add special handling for manifest
+  if (event.request.url.endsWith('/manifest.json')) {
+    event.respondWith(
+      caches.match(event.request)
+        .then(response => response || fetch(event.request))
+    );
+    return;
+  }
+  
   event.respondWith(
     caches.match(event.request)
       .then(response => response || fetch(event.request))
