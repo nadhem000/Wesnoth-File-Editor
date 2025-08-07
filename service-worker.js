@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wesnoth-editor-v5';
+const CACHE_NAME = 'wesnoth-editor-v6';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -10,19 +10,30 @@ const urlsToCache = [
   '/icon-512x512.png',
   '/manifest.json'
 ];
+//  database functions using IndexedDB
+const DB_NAME = 'WesnothEditorDB';
+const STORE_NAME = 'pendingOperations';
 
 self.addEventListener('install', event => {
-  // Handle file protocol inside install handler
-  if (self.location.protocol === 'file:') {
-    console.log('Skipping service worker for file protocol');
-    self.skipWaiting();  // Bypass waiting phase
-    return;  // Exit early from install event
-  }
-
-  // Normal install process for http/https
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
+  );
+});
+
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cache => {
+          // Delete all caches that are not current
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache);
+          }
+        })
+      );
+    }).then(() => self.clients.claim())
   );
 });
 
@@ -74,7 +85,7 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
-    clients.openWindow('https://wesnoth-editor.example.com') // Replace with your URL
+    clients.openWindow('https://wesnoth-file-editor.netlify.app') // Replace with your URL
   );
 });
 
@@ -94,16 +105,53 @@ async function handleBackgroundSync() {
   }
 }
 
-// Mock database functions
+//  database functions
 async function getPendingOperations() {
-  return new Promise(resolve => {
-    // In real implementation, use IndexedDB
-    resolve(JSON.parse(localStorage.getItem('pendingOperations') || []));
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, 1);
+    
+    request.onerror = () => reject(request.error);
+    
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+      }
+    };
+
+    request.onsuccess = (event) => {
+      const db = event.target.result;
+      const transaction = db.transaction(STORE_NAME, 'readonly');
+      const store = transaction.objectStore(STORE_NAME);
+      const getAllRequest = store.getAll();
+      
+      getAllRequest.onsuccess = () => resolve(getAllRequest.result.map(item => item.data));
+      getAllRequest.onerror = () => reject(getAllRequest.error);
+    };
+  }).catch(error => {
+    console.error('Error getting pending operations:', error);
+    return [];
   });
 }
 
 async function clearPendingOperations() {
-  localStorage.removeItem('pendingOperations');
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, 1);
+    
+    request.onerror = () => reject(request.error);
+    
+    request.onsuccess = (event) => {
+      const db = event.target.result;
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const clearRequest = store.clear();
+      
+      clearRequest.onsuccess = () => resolve();
+      clearRequest.onerror = () => reject(clearRequest.error);
+    };
+  }).catch(error => {
+    console.error('Error clearing pending operations:', error);
+  });
 }
 
 async function sendToServer(operations) {

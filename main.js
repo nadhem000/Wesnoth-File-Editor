@@ -1,6 +1,6 @@
 // Register service worker and handle installation
 // Wrap service worker registration in protocol check
-if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
+if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js')
     .then(registration => {
       console.log('ServiceWorker registered:', registration);
@@ -156,6 +156,12 @@ document.addEventListener('DOMContentLoaded', () => {
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   initializePushNotifications();
+  
+  // Always show install button if PWA installable
+  const installBtn = document.getElementById('editor-text-install-btn');
+  if (installBtn && window.matchMedia('(display-mode: browser)').matches) {
+    installBtn.style.display = 'block';
+  }
   
   // Register background sync for offline saves
   document.querySelectorAll('.editor-text-button-action').forEach(button => {
