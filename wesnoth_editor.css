@@ -259,7 +259,69 @@ body {
 .editor-text-dictionary-content.editor-text-show {
 	display: block;
 }
+.editor-text-tag-definition {
+    background-color: var(--editor-text-aside-bg);
+    border-radius: var(--editor-text-radius);
+    padding: 15px;
+    margin-bottom: 25px;
+    cursor: pointer;
+    transition: var(--editor-text-transition);
+    border: 1px solid var(--editor-text-border-color);
+    box-shadow: var(--editor-text-shadow);
+}
 
+.editor-text-tag-definition:hover {
+    box-shadow: 0 4px 12px rgba(58, 38, 24, 0.15);
+    transform: translateY(-2px);
+}
+
+.editor-text-tag-definition-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.editor-text-tag-definition-title {
+    font-weight: 600;
+    color: var(--editor-text-text-dark);
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.editor-text-dictionary-content {
+    display: none;
+    animation: editor-text-fadeIn 0.4s ease;
+}
+
+.editor-text-nested-badge {
+    display: inline-block;
+    background-color: #e0f7fa;
+    color: #00796b;
+    border-radius: 12px;
+    padding: 2px 8px;
+    margin: 0 5px 5px 0;
+    font-size: 0.85em;
+    border: 1px dashed #4db6ac;
+}
+.editor-text-dictionary-content.editor-text-show {
+    display: block;
+}
+.editor-text-tag-definition-title::before {
+    content: "📝";
+}
+
+.editor-text-tag-definition-content {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed var(--editor-text-border-color);
+    display: none;
+}
+
+.editor-text-tag-definition-content.editor-text-show {
+    display: block;
+}
 .editor-text-options {
 	display: flex;
 	gap: 12px;
@@ -329,6 +391,14 @@ body {
 	gap: 12px;
 }
 
+.editor-text-tag-container {
+    all: initial; /* Reset inherited styles */
+    display: block;
+    white-space: pre;
+    font-family: inherit;
+    font-size: inherit;
+    color: initial !important;
+}
 .editor-text-aside-item {
 	padding: 14px;
 	background-color: var(--editor-text-editor-bg);
@@ -340,6 +410,7 @@ body {
 	display: flex;
 	align-items: center;
 	gap: 10px;
+    margin-bottom: 4px;
 }
 
 .editor-text-aside-item:hover {
@@ -1180,21 +1251,4 @@ body {
     border: 1px solid var(--editor-text-border-color);
     border-radius: 4px;
     font-family: inherit;
-}
-.editor-text-offline .editor-text-header::after {
-  background: #f44336;
-}
-
-.editor-text-offline::before {
-  content: "Offline Mode - Changes will sync when online";
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: #f44336;
-  color: white;
-  text-align: center;
-  padding: 10px;
-  z-index: 1000;
-  font-weight: bold;
 }
