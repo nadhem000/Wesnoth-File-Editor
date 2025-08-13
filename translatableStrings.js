@@ -1,4 +1,4 @@
-
+window.missingTranslationKeys = new Set();
 /**
 	* Translation strings for UI
 	* @type {Object}
@@ -20,6 +20,7 @@ const translatableStrings = {
     "text_editor.tag_definition_title": "Tag Definition",
     "text_editor.dictionary": "Dictionary",
     "text_editor.dictionary_content": "Define your tags and their structure here. Each tag should have keys with specified types.",
+	"text_editor.style_modal_title": "Style Assignment",
     "text_editor.option_color": "Color",
     "text_editor.option_indentation": "Indentation",
     "text_editor.option_export": "Export",

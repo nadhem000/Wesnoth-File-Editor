@@ -82,8 +82,17 @@ function updateLineNumbers() {
 	* @version v0.2
 */
 function saveTagDefinition(tag, definition, mode = 'append') {
+    console.log('[SaveTag] Saving tag:', tag);
+    console.log('[SaveTag] Mode:', mode);
+    console.log('[SaveTag] Definition:', definition);
     try {
         const tags = JSON.parse(localStorage.getItem('editor-text-tags')) || {};
+        // Ensure definition has all required properties
+        definition = {
+            keys: definition.keys || [],
+            nested_tags: definition.nested_tags || '',
+            comment: definition.comment || ''  // Add this line to preserve comments
+        };
         // Ensure definition has nested_tags property
         if (!definition.nested_tags) definition.nested_tags = '';
         if (mode === 'replace') {
@@ -95,8 +104,11 @@ function saveTagDefinition(tag, definition, mode = 'append') {
         localStorage.setItem('editor-text-tags', JSON.stringify(tags));
         updateTagList();
         updateDictionaryTable();
+        console.log('[SaveTag] Tag saved successfully');
 		} catch (error) {
         console.error('Error saving tag definition:', error);
+        console.error('[SaveTag] Error saving tag:', error);
+        throw error;
         alert(i18n.t('text_editor.save_tag_error') || 'Error saving tag definition');
 	}
 }
@@ -700,6 +712,7 @@ function validateTagForm() {
                 error: i18n.t('text_editor.error_tag_name_empty') || 'Tag name cannot be empty' 
             };
         }
+        console.log('[Validate] Validation successful');
         return { 
             valid: true, 
             tagName, 
@@ -709,6 +722,7 @@ function validateTagForm() {
         };
     } catch (error) {
         console.error('Form validation error:', error);
+        console.error('[Validate] Validation error:', error);
         return {
             valid: false,
             error: i18n.t('text_editor.form_validation_error') || 'Form validation error'
@@ -854,6 +868,7 @@ function updateDictionaryTable() {
                 // FIX: Correct cell order (Tag Name, Keys, Nested Tags, Actions)
     row.appendChild(tagCell);
     row.appendChild(keysCell);
+row.appendChild(nestedCell);
     row.appendChild(actionsCell);  
                 tbody.appendChild(row);
 			});
@@ -953,6 +968,7 @@ function attachEditDeleteHandlers() {
 */
 function parseManualInput(input) {
     try {
+        console.log('[ParseManual] Starting parse');
         const tagRegex = /\[(\w+)\]([\s\S]*?)\[\/\1\]/g;
         const keyRegex = /(\w+)\s*=\s*(".*?"|\S+)\s+\(([^,]+),\s*([^,]+),\s*([^)]+)\)(?:\s*#\s*(.*))?/;
         const nestedRegex = /nested_tags\s*=\s*"([^"]+)"/i;
@@ -997,8 +1013,10 @@ function parseManualInput(input) {
                 comment: tagComment  // STORE TAG COMMENT
             });
         }
+        console.log(`[ParseManual] Found ${tags.length} tags`);
         return tags;
     } catch (error) {
+        console.error('[ParseManual] Error:', error);
         console.error(i18n.t('text_editor.general_error') + error.message);
         return [];
     }
@@ -1082,6 +1100,10 @@ function parseComments(content) {
 */
 function showTemporaryFeedback(element, text, color) {
     try {
+        if (!element) {
+            console.error('[Feedback] Element is null:', text);
+            return;
+        }
         const originalText = element.textContent;
         const originalColor = element.style.background;
         element.textContent = text;
@@ -1093,6 +1115,7 @@ function showTemporaryFeedback(element, text, color) {
             element.style.fontWeight = '';
         }, 2000);
     } catch (error) {
+        console.error('[Feedback] Error:', error);
         console.error(i18n.t('text_editor.general_error') + error.message);
     }
 }
@@ -1113,7 +1136,8 @@ function closeColorModal() {
 */
 function closeModal() {
     try {
-        document.getElementById('editor-text-save-modal').style.display = 'none';
+        const modal = document.getElementById('editor-text-save-modal');
+        if (modal) modal.style.display = 'none';
         pendingTagName = null;
         pendingTagDefinition = null;
     } catch (error) {
@@ -1247,17 +1271,6 @@ document.querySelectorAll('.editor-text-tab').forEach(tab => {
 		}
 	});
 });
-// Expand/Collapse functionality
-document.querySelectorAll('.editor-text-howto, .editor-text-dictionary').forEach(section => {
-  const header = section.querySelector('.editor-text-howto-header, .editor-text-dictionary-header');
-  const content = section.querySelector('.editor-text-howto-content, .editor-text-dictionary-content');
-  const icon = header.querySelector('.editor-text-icon');
-  
-  header.addEventListener('click', () => {
-    content.classList.toggle('editor-text-show');
-    icon.classList.toggle('editor-text-rotated');
-  });
-});
 // ====================
 // TEACHER TAB ENHANCEMENTS
 // ====================
@@ -1343,6 +1356,7 @@ document.querySelectorAll('.editor-text-key-name, .editor-text-key-default, .edi
     input.addEventListener('input', updateTagPreview);
 });
 document.getElementById('editor-text-modal-replace').addEventListener('click', function() {
+    console.log('[Modal] Replace clicked');
     try {
         saveTagDefinition(pendingTagName, pendingTagDefinition, 'replace');
         updateDictionaryTable();
@@ -1354,6 +1368,7 @@ document.getElementById('editor-text-modal-replace').addEventListener('click', f
 	}
 });
 document.getElementById('editor-text-modal-append').addEventListener('click', function() {
+    console.log('[Modal] Append clicked');
     try {
         saveTagDefinition(pendingTagName, pendingTagDefinition, 'append');
         updateDictionaryTable();
@@ -1466,63 +1481,38 @@ document.getElementById('editor-text-clear-btn').addEventListener('click', funct
 });
 document.getElementById('editor-text-parse-btn').addEventListener('click', function() {
     try {
+        console.log('[Manual Parse] Button clicked - starting manual parse');
         const manualInput = document.getElementById('editor-text-manual-input').value;
+        console.log('[Manual Parse] Manual input:', manualInput);
+        
         if (!manualInput.trim()) {
+            console.warn('[Manual Parse] Input is empty');
             alert(i18n.t('text_editor.manual_enter_tags'));
             return;
-		}
-        // Parse the manual input
+        }
+        
+        console.log('[Manual Parse] Parsing input...');
         const tags = parseManualInput(manualInput);
+        console.log('[Manual Parse] Parsed tags:', tags);
+        
         if (tags.length === 0) {
+            console.warn('[Manual Parse] No tags found');
             alert(i18n.t('text_editor.manual_no_tags_found'));
             return;
-		}
-        // For simplicity, we'll take the first tag
-        const tag = tags[0];
-        // Update the form with the parsed tag
-        document.getElementById('editor-text-tag-name').value = tag.name;
-        // Clear existing keys
-        const keysContainer = document.getElementById('editor-text-keys-container');
-        keysContainer.innerHTML = '';
-        // Add keys from the parsed tag
-        tag.keys.forEach(key => {
-            const keyRow = createKeyRow();
-            keysContainer.appendChild(keyRow);
-            // Set the values
-            keyRow.querySelector('.editor-text-key-name').value = key.name;
-            keyRow.querySelector('.editor-text-key-default').value = key.defaultValue;
-            keyRow.querySelector('.editor-text-key-type').value = key.type;
-            keyRow.querySelector('.editor-text-key-mandatory').value = key.mandatory;
-            keyRow.querySelector('.editor-text-key-scope').value = key.scope;
-            keyRow.querySelector('.editor-text-key-comment').value = key.comment || '';
-            // Add event listeners
-            keyRow.querySelector('.editor-text-remove-key').addEventListener('click', function() {
-                try {
-                    keysContainer.removeChild(keyRow);
-                    updateTagPreview();
-					} catch (error) {
-                    console.error(i18n.t('text_editor.error_removing_key'), error);
-                    alert(error.message || i18n.t('text_editor.error_removing_key'));
-				}
-			});
-            const inputs = keyRow.querySelectorAll('input, select');
-            inputs.forEach(input => {
-                input.addEventListener('input', updateTagPreview);
-			});
-		});
-        // Update preview
-        updateTagPreview();
-        // Success feedback
-        this.textContent = i18n.t('text_editor.parsed_feedback');
+        }
+        
+        console.log('[Manual Parse] Parsed successfully');
+        this.textContent = '✓ ' + i18n.t('text_editor.parse_success');
         this.style.background = 'linear-gradient(to right, #4CAF50, #388E3C)';
+        
         setTimeout(() => {
             this.textContent = i18n.t('text_editor.parse_form');
             this.style.background = '';
-		}, 2000);
-		} catch (error) {
-        console.error(i18n.t('text_editor.error_parsing_manual'), error);
+        }, 2000);
+    } catch (error) {
+        console.error('[Manual Parse] Error:', error);
         alert(i18n.t('text_editor.error_parsing_manual') + ': ' + error.message);
-	}
+    }
 });
 // ====================
 // INDENTATION SETTINGS
@@ -1599,18 +1589,27 @@ document.getElementById('editor-text-save-manual-btn').addEventListener('click',
         for (const tag of tags) {
             if (existingTags[tag.name] && existingTags[tag.name].length > 0) {
                 hasExistingTags = true;
-                // Set pending tag information - include full definition
                 pendingTagName = tag.name;
                 pendingTagDefinition = {
                     keys: tag.keys,
-                    nested_tags: tag.nested_tags || ''
-				};
-                // Show modal
-                document.getElementById('editor-text-modal-tag-name').textContent = `[${tag.name}]`;
-                document.getElementById('editor-text-save-modal').style.display = 'flex';
+                    nested_tags: tag.nested_tags || '',
+                    comment: tag.comment || ''  // ADD COMMENT SUPPORT
+                };
+                
+                // ADD NULL CHECK BEFORE ACCESSING ELEMENT
+                const tagNameElement = document.getElementById('editor-text-modal-tag-name');
+                if (tagNameElement) {
+                    tagNameElement.textContent = `[${tag.name}]`;
+                }
+                
+                // ADD NULL CHECK BEFORE SHOWING MODAL
+                const saveModal = document.getElementById('editor-text-save-modal');
+                if (saveModal) {
+                    saveModal.style.display = 'flex';
+                }
                 break; // Show modal for first conflict
-			}
-		}
+            }
+        }
         // If no conflicts, save immediately
         if (!hasExistingTags) {
             tags.forEach(tag => {
@@ -1670,35 +1669,44 @@ document.getElementById('editor-text-parse-form-btn').addEventListener('click', 
 });
 // Save entry functionality
 document.getElementById('editor-text-save-entry-btn').addEventListener('click', function() {
-    try {
-        const validation = validateTagForm();
-        if (!validation.valid) {
-            showTemporaryFeedback(this, '⚠️ ' + validation.error, '#f44336');
-            return;
-		}
-        const tags = getTagDefinitions();
-        const tagName = validation.tagName;
-        const tagDefinition = {
-            keys: validation.keys,
-            nested_tags: validation.nested_tags,
-            comment: validation.comment  // STORE COMMENT
-		};
-        if (tags[tagName] && tags[tagName].length > 0) {
-            // Existing tag handling
-            pendingTagName = tagName;
-            pendingTagDefinition = tagDefinition;
-            document.getElementById('editor-text-modal-tag-name').textContent = `[${tagName}]`;
-            document.getElementById('editor-text-save-modal').style.display = 'flex';
-			} else {
-            // New tag
-            saveTagDefinition(tagName, tagDefinition);
-            updateDictionaryTable();
-            showTemporaryFeedback(this, '✓ ' + i18n.t('text_editor.save_success'), '#4CAF50');
-		}
-		} catch (error) {
-        console.error(i18n.t('text_editor.error_saving_entry'), error);
-        showTemporaryFeedback(this, '⚠️ ' + error.message, '#f44336');
-	}
+  try {
+    const validation = validateTagForm();
+    if (!validation.valid) {
+      showTemporaryFeedback(this, '⚠️ ' + validation.error, '#f44336');
+      return;
+    }
+
+    const tags = getTagDefinitions();
+    const tagName = validation.tagName;
+    const tagDefinition = {
+      keys: validation.keys,
+      nested_tags: validation.nested_tags,
+      comment: validation.comment
+    };
+
+    if (tags[tagName] && tags[tagName].length > 0) {
+      pendingTagName = tagName;
+      pendingTagDefinition = tagDefinition;
+      
+      // Set tag name in modal
+      const modalTagName = document.getElementById('editor-text-modal-tag-name');
+      if (modalTagName) {
+        modalTagName.textContent = `[${tagName}]`;
+      }
+      
+      // Show modal
+      const saveModal = document.getElementById('editor-text-save-modal');
+      if (saveModal) {
+        saveModal.style.display = 'flex';
+      }
+    } else {
+      saveTagDefinition(tagName, tagDefinition);
+      showTemporaryFeedback(this, '✓ ' + i18n.t('text_editor.save_success'), '#4CAF50');
+    }
+  } catch (error) {
+    console.error('Error saving entry:', error);
+    showTemporaryFeedback(this, '⚠️ ' + error.message, '#f44336');
+  }
 });
 // ====================
 // COLOR SETTINGS
@@ -1777,44 +1785,37 @@ document.getElementById('editor-text-student-display').addEventListener('blur', 
 	}
 });
 // ====================
-// INITIALIZATION
+// COLLAPSIBLE SECTIONS
 // ====================
-document.addEventListener('DOMContentLoaded', function() {
+function setupExpandableSections() {
     try {
-    const tagDefSection = document.querySelector('.editor-text-tag-definition');
-    const tagDefHeader = tagDefSection.querySelector('.editor-text-dictionary-header');
-    const tagDefContent = tagDefSection.querySelector('.editor-text-dictionary-content');
-    const tagDefIcon = tagDefHeader.querySelector('.editor-text-icon');
-    
-    tagDefHeader.addEventListener('click', () => {
-        tagDefContent.classList.toggle('editor-text-show');
-        tagDefIcon.classList.toggle('editor-text-rotated');
-    });
-        // Force initialize the WML library on page load
-        initializeWmlLibrary(true);
-        updateDictionaryTable();
-        updateTagList();
-    /* makeTagDefinitionCollapsible() */;
-        document.getElementById('editor-text-student-display').innerText = '';
-        const editor = document.getElementById('editor-text-student-display');
-        // Track editor focus state
-        editor.addEventListener('focus', () => {
-            isEditorFocused = true;
-            lastCursorPosition = saveCursorPositionAsIndex();
-		});
-        editor.addEventListener('blur', () => {
-            isEditorFocused = false;
-            lastCursorPosition = saveCursorPositionAsIndex();
-		});
-        // Existing event listeners
-        editor.addEventListener('keyup', saveCursorPosition);
-        editor.addEventListener('mouseup', saveCursorPosition);
-        updateLineNumbers();
-		} catch (error) {
-        console.error(i18n.t('text_editor.error_initializing'), error);
-        alert(i18n.t('text_editor.error_initializing') + ': ' + error.message);
-	}
-});
+        // Handle How To sections
+        document.querySelectorAll('.editor-text-howto').forEach(section => {
+            const header = section.querySelector('.editor-text-howto-header');
+            const content = section.querySelector('.editor-text-howto-content');
+            const icon = header.querySelector('.editor-text-icon');
+            
+            header.addEventListener('click', () => {
+                content.classList.toggle('editor-text-show');
+                icon.classList.toggle('editor-text-rotated');
+            });
+        });
+
+        // Handle ALL dictionary headers (including nested ones)
+        document.querySelectorAll('.editor-text-dictionary-header').forEach(header => {
+            const section = header.closest('.editor-text-dictionary');
+            const content = section.querySelector('.editor-text-dictionary-content');
+            const icon = header.querySelector('.editor-text-icon');
+            
+            header.addEventListener('click', () => {
+                content.classList.toggle('editor-text-show');
+                icon.classList.toggle('editor-text-rotated');
+            });
+        });
+    } catch (error) {
+        console.error('Error setting up expandable sections:', error);
+    }
+}
 // ====================
 // TRANSLATION FUNCTION
 // ====================
@@ -1844,5 +1845,61 @@ function handleTranslations() {
     });
 }
 
-// Initialize translations on DOM load
-document.addEventListener('DOMContentLoaded', handleTranslations);
+// ====================
+// INITIALIZATION
+// ====================
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+    /* const tagDefSection = document.querySelector('.editor-text-tag-definition');
+    const tagDefHeader = tagDefSection.querySelector('.editor-text-dictionary-header');
+    const tagDefContent = tagDefSection.querySelector('.editor-text-dictionary-content');
+    const tagDefIcon = tagDefHeader.querySelector('.editor-text-icon'); */
+    /* 
+    tagDefHeader.addEventListener('click', () => {
+        tagDefContent.classList.toggle('editor-text-show');
+        tagDefIcon.classList.toggle('editor-text-rotated');
+    }); */
+        
+    console.log('[Init] DOMContentLoaded');
+    
+    // Check if save button exists
+    const saveBtn = document.getElementById('editor-text-save-entry-btn');
+    if (!saveBtn) {
+        console.error('[Init] Save entry button not found!');
+    }
+    
+    // Check if modal elements exist
+    if (!document.getElementById('editor-text-save-modal')) {
+        console.error('[Init] Save modal not found!');
+    }
+    
+    if (!document.getElementById('editor-text-modal-tag-name')) {
+        console.error('[Init] Modal tag name element not found!');
+    }
+    handleTranslations();
+        initializeWmlLibrary(true);
+        updateDictionaryTable();
+        updateTagList();
+    /* makeTagDefinitionCollapsible() */;
+        
+    setupExpandableSections();
+        document.getElementById('editor-text-student-display').innerText = '';
+        const editor = document.getElementById('editor-text-student-display');
+        // Track editor focus state
+        editor.addEventListener('focus', () => {
+            isEditorFocused = true;
+            lastCursorPosition = saveCursorPositionAsIndex();
+		});
+        editor.addEventListener('blur', () => {
+            isEditorFocused = false;
+            lastCursorPosition = saveCursorPositionAsIndex();
+		});
+        // Existing event listeners
+        editor.addEventListener('keyup', saveCursorPosition);
+        editor.addEventListener('mouseup', saveCursorPosition);
+        updateLineNumbers();
+		} catch (error) {
+        console.error(i18n.t('text_editor.error_initializing'), error);
+        alert(i18n.t('text_editor.error_initializing') + ': ' + error.message);
+	}
+});

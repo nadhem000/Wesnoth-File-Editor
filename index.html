@@ -9,17 +9,12 @@
 		<title>Wesnoth File Editor</title>
 	</head>
 	<body>
+		<div id="editor-text-notification" class="editor-text-notification">
+		</div>
 		<div class="editor-text-container">
 			<div class="editor-text-header">
 				<h1 class="editor-text-title" data-i18n="text_editor.title">Wesnoth File Editor</h1>
 				<p class="editor-text-subtitle" data-i18n="text_editor.subtitle">Create and manage Wesnoth scenario files with ease</p>
-				
-				<!--  INSTALL BUTTON -->
-				<button id="editor-text-install-btn" class="editor-text-button editor-text-button-action" 
-				style="margin: 15px auto; padding: 12px 25px; font-size: 1.1rem; display: none;">
-					<span>📱</span> Install App
-				</button>
-				
 				<div class="editor-text-howto">
 					<div class="editor-text-howto-header">
 						<div class="editor-text-howto-title" data-i18n="text_editor.how_to_use">How to Use</div>
@@ -48,6 +43,23 @@
 				</div>
 			</div>
 			<!--  Teacher Tab -->
+			<div class="editor-text-modal" id="editor-text-save-modal" style="display: none;">
+				<div class="editor-text-modal-content">
+					<h3 data-i18n="text_editor.modal_title">Tag Already Exists</h3>
+					<p data-i18n="text_editor.modal_message">The tag <span id="editor-text-modal-tag-name"></span> already exists. How would you like to proceed?</p>
+					<div class="editor-text-modal-buttons">
+						<button class="editor-text-button editor-text-button-action" id="editor-text-modal-replace">
+							<span>🔄</span> <span data-i18n="text_editor.modal_replace">Replace Existing</span>
+						</button>
+						<button class="editor-text-button editor-text-button-action" id="editor-text-modal-append">
+							<span>➕</span> <span data-i18n="text_editor.modal_append">Add New Version</span>
+						</button>
+						<button class="editor-text-button editor-text-button-cancel" id="editor-text-modal-cancel">
+							<span>✖️</span> <span data-i18n="text_editor.modal_cancel">Cancel</span>
+						</button>
+					</div>
+				</div>
+			</div>
 			<div class="editor-text-tab-content editor-text-active" id="teacher-tab">
 				<div class="editor-text-options">
 					<div class="editor-text-option" data-i18n="text_editor.option_color">
@@ -109,6 +121,7 @@
 								<tr>
 									<th data-i18n="text_editor.table_header_tag_name">Tag Name</th>
 									<th data-i18n="text_editor.table_header_keys">Keys</th>
+									<th data-i18n="text_editor.table_header_nested">Nested Tags</th> 
 									<th data-i18n="text_editor.table_header_actions">Actions</th>
 								</tr>
 							</thead>
@@ -151,275 +164,258 @@
 					</div>
 				</div>
 				<!-- Combined Tag Definition Section -->
-				<div class="editor-text-tag-definition">
-					<div class="editor-text-dictionary">
-						<div class="editor-text-dictionary-header">
-							<div class="editor-text-dictionary-title" data-i18n="text_editor.tag_definition_title">Tag Definition</div>
-							<div class="editor-text-icon">▼</div>
-						</div>
-						<div class="editor-text-dictionary-content">
-							<!-- NEW MANUAL ENTRY SECTION -->
-							<div class="editor-text-manual-entry">
-								<div class="editor-text-manual-header">
-									<div class="editor-text-manual-title" data-i18n="text_editor.manual_entry_title">Manual Tag Entry</div>
-								</div>
-								<div class="editor-text-manual-instructions">
-									<h4 data-i18n="text_editor.manual_syntax_title">Tag Definition Syntax</h4>
-									<p data-i18n="text_editor.manual_instruction">Enter your tags using the following format:</p>
-									<pre data-i18n="text_editor.tag_syntax_example">[tag_name]
-										key1 = "default_value" (type, mandatory, scope)
-										key2 = "default_value" (type, mandatory, scope)
-										nested_tags="Comma  separated list"
-									[/tag_name]</pre>
-									<p data-i18n="text_editor.example_with_comments">Example with comments:</p>
-									<pre data-i18n="text_editor.tag_example">[foreach] # This is a tag comment
-										array="" (string, mandatory, official) # This is a key comment
-										nested_tags="do"
-									[/foreach] # End of foreach</pre>
-									<p><span data-i18n="text_editor.supported_types">Supported types:</span> <span class="editor-text-syntax-highlight">string</span>, <span class="editor-text-syntax-highlight">translatable</span>, <span class="editor-text-syntax-highlight">integer</span>, <span class="editor-text-syntax-highlight">numeric</span>, <span class="editor-text-syntax-highlight">boolean</span>, <span class="editor-text-syntax-highlight">path</span></p>
-									<p><span data-i18n="text_editor.mandatory_label">Mandatory:</span> <span class="editor-text-syntax-highlight">mandatory</span> <span data-i18n="text_editor.or">or</span> <span class="editor-text-syntax-highlight">optional</span></p>
-									<p><span data-i18n="text_editor.scope_label">Scope:</span> <span class="editor-text-syntax-highlight">official</span> <span data-i18n="text_editor.or">or</span> <span class="editor-text-syntax-highlight">umc</span></p>
-								</div>
-								<textarea class="editor-text-manual-textarea" id="editor-text-manual-input" placeholder="Paste your tag definitions here..." data-i18n-placeholder="text_editor.manual_textarea_placeholder">[foreach]
-									array="" (string, mandatory, official)
+				<div class="editor-text-tag-definition editor-text-dictionary">
+					<div class="editor-text-dictionary-header">
+						<div class="editor-text-dictionary-title" data-i18n="text_editor.tag_definition_title">Tag Definition</div>
+						<div class="editor-text-icon">▼</div>
+					</div>
+					<div class="editor-text-dictionary-content">
+						<!-- NEW MANUAL ENTRY SECTION -->
+						<div class="editor-text-manual-entry">
+							<div class="editor-text-manual-header">
+								<div class="editor-text-manual-title" data-i18n="text_editor.manual_entry_title">Manual Tag Entry</div>
+							</div>
+							<div class="editor-text-manual-instructions">
+								<h4 data-i18n="text_editor.manual_syntax_title">Tag Definition Syntax</h4>
+								<p data-i18n="text_editor.manual_instruction">Enter your tags using the following format:</p>
+								<pre data-i18n="text_editor.tag_syntax_example">[tag_name]
+									key1 = "default_value" (type, mandatory, scope)
+									key2 = "default_value" (type, mandatory, scope)
+									nested_tags="Comma  separated list"
+								[/tag_name]</pre>
+								<p data-i18n="text_editor.example_with_comments">Example with comments:</p>
+								<pre data-i18n="text_editor.tag_example">[foreach] # This is a tag comment
+									array="" (string, mandatory, official) # This is a key comment
 									nested_tags="do"
-								[/foreach]</textarea>
+								[/foreach] # End of foreach</pre>
+								<p><span data-i18n="text_editor.supported_types">Supported types:</span> <span class="editor-text-syntax-highlight">string</span>, <span class="editor-text-syntax-highlight">translatable</span>, <span class="editor-text-syntax-highlight">integer</span>, <span class="editor-text-syntax-highlight">numeric</span>, <span class="editor-text-syntax-highlight">boolean</span>, <span class="editor-text-syntax-highlight">path</span></p>
+								<p><span data-i18n="text_editor.mandatory_label">Mandatory:</span> <span class="editor-text-syntax-highlight">mandatory</span> <span data-i18n="text_editor.or">or</span> <span class="editor-text-syntax-highlight">optional</span></p>
+								<p><span data-i18n="text_editor.scope_label">Scope:</span> <span class="editor-text-syntax-highlight">official</span> <span data-i18n="text_editor.or">or</span> <span class="editor-text-syntax-highlight">umc</span></p>
+							</div>
+							<textarea class="editor-text-manual-textarea" id="editor-text-manual-input" placeholder="Paste your tag definitions here..." data-i18n-placeholder="text_editor.manual_textarea_placeholder">[foreach]
+								array="" (string, mandatory, official)
+								nested_tags="do"
+							[/foreach]</textarea>
+							<div class="editor-text-form-buttons">
+								<button class="editor-text-button editor-text-button-action" 
+								id="editor-text-parse-btn" 
+								data-i18n="text_editor.parse_form">
+									🔄 Parse & Update
+								</button>
+								<button class="editor-text-button editor-text-clear-btn" 
+								id="editor-text-clear-btn"
+								data-i18n="text_editor.clear_form">
+									🧹 Clear
+								</button>
+								<button class="editor-text-button editor-text-button-action" 
+								id="editor-text-save-manual-btn"
+								data-i18n="text_editor.save_manual">
+									💾 Save Manual Entry
+								</button>
+							</div>
+							<div class="editor-text-buttons">
+								<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.undo">↩️ Undo</button>
+								<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.redo">↪️ Redo</button>
+							</div>
+						</div>
+						<div class="editor-text-teacher-form-container">
+							<div class="editor-text-teacher-form-header">
+								<div class="editor-text-teacher-form-header-icon">📝</div>
+								<h3 data-i18n="text_editor.define_new_tag">Define New Tag</h3>
+							</div>
+							<div class="editor-text-form-grid">
+								<div class="editor-text-form-group">
+									<label for="editor-text-tag-name" data-i18n="text_editor.tag_name_label">Tag Name</label>
+									<input type="text" id="editor-text-tag-name" placeholder="Enter tag name (e.g., part)" value="part" data-i18n-placeholder="text_editor.tag_name_placeholder">
+								</div>
+								<div class="editor-text-form-group">
+									<label for="editor-text-tag-description" data-i18n="text_editor.tag_description_label">Description</label>
+									<input type="text" id="editor-text-tag-description" placeholder="Tag description (optional)" value="Story segment" data-i18n-placeholder="text_editor.description_placeholder">
+								</div>
+								<div class="editor-text-form-group">
+									<label data-i18n="text_editor.nested_tags_label">Nested Tags</label>
+									<input type="text" id="editor-text-nested-tags" placeholder="Comma separated (e.g., do, then)" data-i18n-placeholder="text_editor.nested_tags_placeholder">
+								</div>
+							</div>
+							<h4 style="margin: 20px 0 15px; color: var(--editor-text-teacher-accent); display: flex; align-items: center; gap: 10px;">
+								<span>🔑</span> 
+								<span data-i18n="text_editor.tag_keys">Tag Keys</span>
+							</h4>
+							<div id="editor-text-keys-container">
+								<div class="editor-text-key-row">
+									<div class="editor-text-form-group">
+										<label data-i18n="text_editor.key_name_label">Key Name</label>
+										<input type="text" class="editor-text-key-name" placeholder="story" value="story" data-i18n-placeholder="text_editor.key_name_placeholder">
+									</div>
+									<div class="editor-text-form-group">
+										<label data-i18n="text_editor.key_default_label">Default Value</label>
+										<input type="text" class="editor-text-key-default" placeholder='""' value='""' data-i18n-placeholder="text_editor.default_value_placeholder">
+									</div>
+									<div class="editor-text-form-group">
+										<label data-i18n="text_editor.key_type_label">Type</label>
+										<select class="editor-text-key-type">
+											<option value="string" data-i18n="text_editor.type_string">String</option>
+											<option value="translatable" selected data-i18n="text_editor.type_translatable">Translatable String</option>
+											<option value="integer" data-i18n="text_editor.type_integer">Integer</option>
+											<option value="numeric" data-i18n="text_editor.type_numeric">Numeric</option>
+											<option value="boolean" data-i18n="text_editor.type_boolean">Boolean</option>
+											<option value="path" data-i18n="text_editor.type_path">Path</option>
+										</select>
+									</div>
+									<div class="editor-text-form-group">
+										<label data-i18n="text_editor.key_mandatory_label">Mandatory</label>
+										<select class="editor-text-key-mandatory">
+											<option value="mandatory" selected data-i18n="text_editor.mandatory">Mandatory</option>
+											<option value="optional" data-i18n="text_editor.optional">Optional</option>
+										</select>
+									</div>
+									<div class="editor-text-form-group">
+										<label data-i18n="text_editor.key_scope_label">Scope</label>
+										<select class="editor-text-key-scope">
+											<option value="official" selected data-i18n="text_editor.official">Official</option>
+											<option value="umc" data-i18n="text_editor.umc">UMC</option>
+										</select>
+									</div>
+									<div class="editor-text-form-group">
+										<label data-i18n="text_editor.key_comment_label">Comment</label>
+										<input type="text" class="editor-text-key-comment" placeholder="Comment (optional)" value="Story text" data-i18n-placeholder="text_editor.comment_placeholder">
+									</div>
+									<button class="editor-text-remove-key" data-i18n="text_editor.remove_key">×</button>
+								</div>
+								<div class="editor-text-key-row">
+									<div class="editor-text-form-group">
+										<label data-i18n="text_editor.key_name_label">Key Name</label>
+										<input type="text" class="editor-text-key-name" placeholder="image" value="image" data-i18n-placeholder="text_editor.key_name_placeholder">
+									</div>
+									<div class="editor-text-form-group">
+										<label data-i18n="text_editor.key_default_label">Default Value</label>
+										<input type="text" class="editor-text-key-default" placeholder='""' value='""' data-i18n-placeholder="text_editor.default_value_placeholder">
+									</div>
+									<div class="editor-text-form-group">
+										<label data-i18n="text_editor.key_type_label">Type</label>
+										<select class="editor-text-key-type">
+											<option value="string" data-i18n="text_editor.type_string">String</option>
+											<option value="translatable" data-i18n="text_editor.type_translatable">Translatable String</option>
+											<option value="integer" data-i18n="text_editor.type_integer">Integer</option>
+											<option value="numeric" data-i18n="text_editor.type_numeric">Numeric</option>
+											<option value="boolean" data-i18n="text_editor.type_boolean">Boolean</option>
+											<option value="path" selected data-i18n="text_editor.type_path">Path</option>
+										</select>
+									</div>
+									<div class="editor-text-form-group">
+										<label data-i18n="text_editor.key_mandatory_label">Mandatory</label>
+										<select class="editor-text-key-mandatory">
+											<option value="mandatory" data-i18n="text_editor.mandatory">Mandatory</option>
+											<option value="optional" selected data-i18n="text_editor.optional">Optional</option>
+										</select>
+									</div>
+									<div class="editor-text-form-group">
+										<label data-i18n="text_editor.key_scope_label">Scope</label>
+										<select class="editor-text-key-scope">
+											<option value="official" selected data-i18n="text_editor.official">Official</option>
+											<option value="umc" data-i18n="text_editor.umc">UMC</option>
+										</select>
+									</div>
+									<div class="editor-text-form-group">
+										<label data-i18n="text_editor.key_comment_label">Comment</label>
+										<input type="text" class="editor-text-key-comment" placeholder="Comment (optional)" value="Story text" data-i18n-placeholder="text_editor.comment_placeholder">
+									</div>
+									<button class="editor-text-remove-key" data-i18n="text_editor.remove_key">×</button>
+								</div>
+							</div>
+							<div class="editor-text-form-button-group">
+								<button class="editor-text-button editor-text-add-key-btn" id="editor-text-add-key" data-i18n="text_editor.add_key_button">+ Add Key</button>
+								<!-- NEW BUTTONS -->
 								<div class="editor-text-form-buttons">
 									<button class="editor-text-button editor-text-button-action" 
-									id="editor-text-parse-btn" 
+									id="editor-text-parse-form-btn" 
 									data-i18n="text_editor.parse_form">
 										🔄 Parse & Update
 									</button>
 									<button class="editor-text-button editor-text-clear-btn" 
-									id="editor-text-clear-btn"
+									id="editor-text-clear-form-btn"
 									data-i18n="text_editor.clear_form">
 										🧹 Clear
 									</button>
 									<button class="editor-text-button editor-text-button-action" 
-									id="editor-text-save-manual-btn"
-									data-i18n="text_editor.save_manual">
-										💾 Save Manual Entry
+									id="editor-text-save-entry-btn"
+									data-i18n="text_editor.save_entry">
+										💾 Save Entry
 									</button>
 								</div>
-								<div class="editor-text-buttons">
-									<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.undo">↩️ Undo</button>
-									<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.redo">↪️ Redo</button>
-								</div>
 							</div>
-							<div class="editor-text-teacher-form-container">
-								<div class="editor-text-teacher-form-header">
-									<div class="editor-text-teacher-form-header-icon">📝</div>
-									<h3 data-i18n="text_editor.define_new_tag">Define New Tag</h3>
-								</div>
-								<div class="editor-text-form-grid">
-									<div class="editor-text-form-group">
-										<label for="editor-text-tag-name" data-i18n="text_editor.tag_name_label">Tag Name</label>
-										<input type="text" id="editor-text-tag-name" placeholder="Enter tag name (e.g., part)" value="part" data-i18n-placeholder="text_editor.tag_name_placeholder">
-									</div>
-									<div class="editor-text-form-group">
-										<label for="editor-text-tag-description" data-i18n="text_editor.tag_description_label">Description</label>
-										<input type="text" id="editor-text-tag-description" placeholder="Tag description (optional)" value="Story segment" data-i18n-placeholder="text_editor.description_placeholder">
-									</div>
-									<div class="editor-text-form-group">
-										<label data-i18n="text_editor.nested_tags_label">Nested Tags</label>
-										<input type="text" id="editor-text-nested-tags" placeholder="Comma separated (e.g., do, then)" data-i18n-placeholder="text_editor.nested_tags_placeholder">
-									</div>
-								</div>
-								<h4 style="margin: 20px 0 15px; color: var(--editor-text-teacher-accent); display: flex; align-items: center; gap: 10px;">
-									<span>🔑</span> 
-									<span data-i18n="text_editor.tag_keys">Tag Keys</span>
-								</h4>
-								<div id="editor-text-keys-container">
-									<div class="editor-text-key-row">
-										<div class="editor-text-form-group">
-											<label data-i18n="text_editor.key_name_label">Key Name</label>
-											<input type="text" class="editor-text-key-name" placeholder="story" value="story" data-i18n-placeholder="text_editor.key_name_placeholder">
-										</div>
-										<div class="editor-text-form-group">
-											<label data-i18n="text_editor.key_default_label">Default Value</label>
-											<input type="text" class="editor-text-key-default" placeholder='""' value='""' data-i18n-placeholder="text_editor.default_value_placeholder">
-										</div>
-										<div class="editor-text-form-group">
-											<label data-i18n="text_editor.key_type_label">Type</label>
-											<select class="editor-text-key-type">
-												<option value="string" data-i18n="text_editor.type_string">String</option>
-												<option value="translatable" selected data-i18n="text_editor.type_translatable">Translatable String</option>
-												<option value="integer" data-i18n="text_editor.type_integer">Integer</option>
-												<option value="numeric" data-i18n="text_editor.type_numeric">Numeric</option>
-												<option value="boolean" data-i18n="text_editor.type_boolean">Boolean</option>
-												<option value="path" data-i18n="text_editor.type_path">Path</option>
-											</select>
-										</div>
-										<div class="editor-text-form-group">
-											<label data-i18n="text_editor.key_mandatory_label">Mandatory</label>
-											<select class="editor-text-key-mandatory">
-												<option value="mandatory" selected data-i18n="text_editor.mandatory">Mandatory</option>
-												<option value="optional" data-i18n="text_editor.optional">Optional</option>
-											</select>
-										</div>
-										<div class="editor-text-form-group">
-											<label data-i18n="text_editor.key_scope_label">Scope</label>
-											<select class="editor-text-key-scope">
-												<option value="official" selected data-i18n="text_editor.official">Official</option>
-												<option value="umc" data-i18n="text_editor.umc">UMC</option>
-											</select>
-										</div>
-										<div class="editor-text-form-group">
-											<label data-i18n="text_editor.key_comment_label">Comment</label>
-											<input type="text" class="editor-text-key-comment" placeholder="Comment (optional)" value="Story text" data-i18n-placeholder="text_editor.comment_placeholder">
-										</div>
-										<button class="editor-text-remove-key" data-i18n="text_editor.remove_key">×</button>
-									</div>
-									<div class="editor-text-key-row">
-										<div class="editor-text-form-group">
-											<label data-i18n="text_editor.key_name_label">Key Name</label>
-											<input type="text" class="editor-text-key-name" placeholder="image" value="image" data-i18n-placeholder="text_editor.key_name_placeholder">
-										</div>
-										<div class="editor-text-form-group">
-											<label data-i18n="text_editor.key_default_label">Default Value</label>
-											<input type="text" class="editor-text-key-default" placeholder='""' value='""' data-i18n-placeholder="text_editor.default_value_placeholder">
-										</div>
-										<div class="editor-text-form-group">
-											<label data-i18n="text_editor.key_type_label">Type</label>
-											<select class="editor-text-key-type">
-												<option value="string" data-i18n="text_editor.type_string">String</option>
-												<option value="translatable" data-i18n="text_editor.type_translatable">Translatable String</option>
-												<option value="integer" data-i18n="text_editor.type_integer">Integer</option>
-												<option value="numeric" data-i18n="text_editor.type_numeric">Numeric</option>
-												<option value="boolean" data-i18n="text_editor.type_boolean">Boolean</option>
-												<option value="path" selected data-i18n="text_editor.type_path">Path</option>
-											</select>
-										</div>
-										<div class="editor-text-form-group">
-											<label data-i18n="text_editor.key_mandatory_label">Mandatory</label>
-											<select class="editor-text-key-mandatory">
-												<option value="mandatory" data-i18n="text_editor.mandatory">Mandatory</option>
-												<option value="optional" selected data-i18n="text_editor.optional">Optional</option>
-											</select>
-										</div>
-										<div class="editor-text-form-group">
-											<label data-i18n="text_editor.key_scope_label">Scope</label>
-											<select class="editor-text-key-scope">
-												<option value="official" selected data-i18n="text_editor.official">Official</option>
-												<option value="umc" data-i18n="text_editor.umc">UMC</option>
-											</select>
-										</div>
-										<div class="editor-text-form-group">
-											<label data-i18n="text_editor.key_comment_label">Comment</label>
-											<input type="text" class="editor-text-key-comment" placeholder="Comment (optional)" value="Story text" data-i18n-placeholder="text_editor.comment_placeholder">
-										</div>
-										<button class="editor-text-remove-key" data-i18n="text_editor.remove_key">×</button>
-									</div>
-								</div>
-								<div class="editor-text-form-button-group">
-									<button class="editor-text-button editor-text-add-key-btn" id="editor-text-add-key" data-i18n="text_editor.add_key_button">+ Add Key</button>
-									<!-- NEW BUTTONS -->
-									<div class="editor-text-form-buttons">
-										<button class="editor-text-button editor-text-button-action" 
-										id="editor-text-parse-form-btn" 
-										data-i18n="text_editor.parse_form">
-											🔄 Parse & Update
-										</button>
-										<button class="editor-text-button editor-text-clear-btn" 
-										id="editor-text-clear-form-btn"
-										data-i18n="text_editor.clear_form">
-											🧹 Clear
-										</button>
-										<button class="editor-text-button editor-text-button-action" 
-										id="editor-text-save-entry-btn"
-										data-i18n="text_editor.save_entry">
-											💾 Save Entry
-										</button>
-									</div>
-								</div>
-								<div class="editor-text-buttons">
-									<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.undo">↩️ Undo</button>
-									<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.redo">↪️ Redo</button>
-								</div>
-								<div class="editor-text-teacher-preview">
-									<div class="editor-text-teacher-preview-header" data-i18n="text_editor.preview_title">Preview</div>
-									<pre id="editor-text-tag-preview">[part]
-										story="" (string/translatable, mandatory, official)
-										image="" (path, optional, official)
-									[/part]</pre>
-								</div>
+							<div class="editor-text-buttons">
+								<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.undo">↩️ Undo</button>
+								<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.redo">↪️ Redo</button>
+							</div>
+							<div class="editor-text-teacher-preview">
+								<div class="editor-text-teacher-preview-header" data-i18n="text_editor.preview_title">Preview</div>
+								<pre id="editor-text-tag-preview">[part]
+									story="" (string/translatable, mandatory, official)
+									image="" (path, optional, official)
+								[/part]</pre>
 							</div>
 						</div>
 					</div>
-					<div class="editor-text-modal" id="editor-text-save-modal" style="display: none;">
-						<div class="editor-text-modal-content">
-							<h3 data-i18n="text_editor.modal_title">Tag Already Exists</h3>
-							<p data-i18n="text_editor.modal_message">The tag <span id="editor-text-modal-tag-name"></span> already exists. How would you like to proceed?</p>
-							<div class="editor-text-modal-buttons">
-								<button class="editor-text-button editor-text-button-action" id="editor-text-modal-replace">
-									<span>🔄</span> <span data-i18n="text_editor.modal_replace">Replace Existing</span>
-								</button>
-								<button class="editor-text-button editor-text-button-action" id="editor-text-modal-append">
-									<span>➕</span> <span data-i18n="text_editor.modal_append">Add New Version</span>
-								</button>
-								<button class="editor-text-button editor-text-button-cancel" id="editor-text-modal-cancel">
-									<span>✖️</span> <span data-i18n="text_editor.modal_cancel">Cancel</span>
-								</button>
+				</div>
+				<div class="editor-text-modal" id="editor-text-color-modal" style="display: none;">
+					<div class="editor-text-modal-content">
+						<h3 data-i18n="text_editor.style_modal_title">Style Assignment</h3>
+						<div class="editor-text-style-container" id="editor-text-style-container">
+							<h4 data-i18n="text_editor.color_by_type">Color by Type</h4>
+							<div class="editor-text-style-item">
+								<label data-i18n="text_editor.type_string">String</label>
+								<input type="color" class="editor-text-color-picker" data-type="string" value="#000000">
+							</div>
+							<div class="editor-text-style-item">
+								<label data-i18n="text_editor.type_translatable">Translatable</label>
+								<input type="color" class="editor-text-color-picker" data-type="translatable" value="#000000">
+							</div>
+							<div class="editor-text-style-item">
+								<label data-i18n="text_editor.type_integer">Integer</label>
+								<input type="color" class="editor-text-color-picker" data-type="integer" value="#000000">
+							</div>
+							<div class="editor-text-style-item">
+								<label data-i18n="text_editor.type_numeric">Numeric</label>
+								<input type="color" class="editor-text-color-picker" data-type="numeric" value="#000000">
+							</div>
+							<div class="editor-text-style-item">
+								<label data-i18n="text_editor.type_boolean">Boolean</label>
+								<input type="color" class="editor-text-color-picker" data-type="boolean" value="#000000">
+							</div>
+							<div class="editor-text-style-item">
+								<label data-i18n="text_editor.type_path">Path</label>
+								<input type="color" class="editor-text-color-picker" data-type="path" value="#000000">
+							</div>
+							<h4 data-i18n="text_editor.bold_by_mandatory">Bold by Mandatory</h4>
+							<div class="editor-text-style-item">
+								<label>
+									<input type="checkbox" class="editor-text-bold-checkbox" data-mandatory="mandatory">
+									<span data-i18n="text_editor.mandatory_keys">Mandatory Keys</span>
+								</label>
+							</div>
+							<div class="editor-text-style-item">
+								<label>
+									<input type="checkbox" class="editor-text-bold-checkbox" data-mandatory="optional">
+									<span data-i18n="text_editor.optional_keys">Optional Keys</span>
+								</label>
+							</div>
+							<h4 data-i18n="text_editor.italic_by_scope">Italic by Scope</h4>
+							<div class="editor-text-style-item">
+								<label>
+									<input type="checkbox" class="editor-text-italic-checkbox" data-scope="official">
+									<span data-i18n="text_editor.official_scope">Official Scope</span>
+								</label>
+							</div>
+							<div class="editor-text-style-item">
+								<label>
+									<input type="checkbox" class="editor-text-italic-checkbox" data-scope="umc">
+									<span data-i18n="text_editor.umc_scope">UMC Scope</span>
+								</label>
 							</div>
 						</div>
-					</div>
-					<div class="editor-text-modal" id="editor-text-color-modal" style="display: none;">
-						<div class="editor-text-modal-content">
-							<h3 data-i18n="text_editor.style_modal_title">Style Assignment</h3>
-							<div class="editor-text-style-container" id="editor-text-style-container">
-								<h4 data-i18n="text_editor.color_by_type">Color by Type</h4>
-								<div class="editor-text-style-item">
-									<label data-i18n="text_editor.type_string">String</label>
-									<input type="color" class="editor-text-color-picker" data-type="string" value="#000000">
-								</div>
-								<div class="editor-text-style-item">
-									<label data-i18n="text_editor.type_translatable">Translatable</label>
-									<input type="color" class="editor-text-color-picker" data-type="translatable" value="#000000">
-								</div>
-								<div class="editor-text-style-item">
-									<label data-i18n="text_editor.type_integer">Integer</label>
-									<input type="color" class="editor-text-color-picker" data-type="integer" value="#000000">
-								</div>
-								<div class="editor-text-style-item">
-									<label data-i18n="text_editor.type_numeric">Numeric</label>
-									<input type="color" class="editor-text-color-picker" data-type="numeric" value="#000000">
-								</div>
-								<div class="editor-text-style-item">
-									<label data-i18n="text_editor.type_boolean">Boolean</label>
-									<input type="color" class="editor-text-color-picker" data-type="boolean" value="#000000">
-								</div>
-								<div class="editor-text-style-item">
-									<label data-i18n="text_editor.type_path">Path</label>
-									<input type="color" class="editor-text-color-picker" data-type="path" value="#000000">
-								</div>
-								<h4 data-i18n="text_editor.bold_by_mandatory">Bold by Mandatory</h4>
-								<div class="editor-text-style-item">
-									<label>
-										<input type="checkbox" class="editor-text-bold-checkbox" data-mandatory="mandatory">
-										<span data-i18n="text_editor.mandatory_keys">Mandatory Keys</span>
-									</label>
-								</div>
-								<div class="editor-text-style-item">
-									<label>
-										<input type="checkbox" class="editor-text-bold-checkbox" data-mandatory="optional">
-										<span data-i18n="text_editor.optional_keys">Optional Keys</span>
-									</label>
-								</div>
-								<h4 data-i18n="text_editor.italic_by_scope">Italic by Scope</h4>
-								<div class="editor-text-style-item">
-									<label>
-										<input type="checkbox" class="editor-text-italic-checkbox" data-scope="official">
-										<span data-i18n="text_editor.official_scope">Official Scope</span>
-									</label>
-								</div>
-								<div class="editor-text-style-item">
-									<label>
-										<input type="checkbox" class="editor-text-italic-checkbox" data-scope="umc">
-										<span data-i18n="text_editor.umc_scope">UMC Scope</span>
-									</label>
-								</div>
-							</div>
-						</div>
+						
+						<!-- Moved buttons inside modal content -->
 						<div class="editor-text-modal-buttons">
 							<button class="editor-text-button editor-text-button-action" id="editor-text-color-reset">
 								<span>🔄</span> <span data-i18n="text_editor.color_reset">Reset to Default</span>
@@ -432,117 +428,118 @@
 							</button>
 						</div>
 					</div>
-					<!-- Indentation Settings Modal -->
-					<div class="editor-text-modal" id="editor-text-indentation-modal" style="display: none;">
-						<div class="editor-text-modal-content">
-							<h3 data-i18n="text_editor.indentation_modal_title">Indentation Settings</h3>
-							<div class="editor-text-style-container">
-								<h4 data-i18n="text_editor.indent_method_label">Method</h4>
-								<div class="editor-text-style-item">
-									<label>
-										<input type="radio" name="indent-method" value="tab" checked>
-										<span data-i18n="text_editor.indent_tabs_label">Tabs</span>
-									</label>
-									<label>
-										<input type="radio" name="indent-method" value="space">
-										<span data-i18n="text_editor.indent_spaces_label">Spaces</span>
-									</label>
-								</div>
-								<h4 data-i18n="text_editor.indent_size_label">Size</h4>
-								<div class="editor-text-style-item">
-									<label data-i18n="text_editor.spaces_per_indent_label">Spaces per indent level:</label>
-									<input type="number" id="editor-text-indent-size" min="1" max="8" value="4">
-								</div>
-								<h4 data-i18n="text_editor.tabs_per_indent_label">Tabs per indent level:</h4>
-								<div class="editor-text-style-item">
-									<label data-i18n="text_editor.tab_count_label">Tab count:</label>
-									<input type="number" id="editor-text-tab-count" min="1" max="4" value="1">
-								</div>
+				</div>
+				<!-- Indentation Settings Modal -->
+				<div class="editor-text-modal" id="editor-text-indentation-modal" style="display: none;">
+					<div class="editor-text-modal-content">
+						<h3 data-i18n="text_editor.indentation_modal_title">Indentation Settings</h3>
+						<div class="editor-text-style-container">
+							<h4 data-i18n="text_editor.indent_method_label">Method</h4>
+							<div class="editor-text-style-item">
+								<label>
+									<input type="radio" name="indent-method" value="tab" checked>
+									<span data-i18n="text_editor.indent_tabs_label">Tabs</span>
+								</label>
+								<label>
+									<input type="radio" name="indent-method" value="space">
+									<span data-i18n="text_editor.indent_spaces_label">Spaces</span>
+								</label>
 							</div>
-							<div class="editor-text-modal-buttons">
-								<button class="editor-text-button editor-text-button-action" id="editor-text-indentation-reset">
-									<span>🔄</span> <span data-i18n="text_editor.indentation_reset">Reset to Default</span>
-								</button>
-								<button class="editor-text-button editor-text-button-save" id="editor-text-indentation-save">
-									<span>💾</span> <span data-i18n="text_editor.indentation_save">Save Settings</span>
-								</button>
-								<button class="editor-text-button editor-text-button-cancel" id="editor-text-indentation-cancel">
-									<span>✖️</span> <span data-i18n="text_editor.indentation_cancel">Cancel</span>
-								</button>
+							<h4 data-i18n="text_editor.indent_size_label">Size</h4>
+							<div class="editor-text-style-item">
+								<label data-i18n="text_editor.spaces_per_indent_label">Spaces per indent level:</label>
+								<input type="number" id="editor-text-indent-size" min="1" max="8" value="4">
+							</div>
+							<h4 data-i18n="text_editor.tabs_per_indent_label">Tabs per indent level:</h4>
+							<div class="editor-text-style-item">
+								<label data-i18n="text_editor.tab_count_label">Tab count:</label>
+								<input type="number" id="editor-text-tab-count" min="1" max="4" value="1">
 							</div>
 						</div>
-					</div>
-				</div>
-			</div>
-			<!-- Student Tab -->
-			<div class="editor-text-tab-content" id="student-tab">
-				<h2 class="editor-text-section-title" data-i18n="text_editor.student_title">Content Creation</h2>
-				<div class="editor-text-dictionary">
-					<div class="editor-text-dictionary-header">
-						<div class="editor-text-dictionary-title" data-i18n="text_editor.dictionary">Dictionary</div>
-						<div class="editor-text-icon">▼</div>
-					</div>
-					<div class="editor-text-dictionary-content">
-						<p data-i18n="text_editor.student_dictionary_content">Use the defined tags to create your scenario content. Click on a tag in the sidebar to insert it.</p>
-						<div class="editor-text-status">
-							<span data-i18n="text_editor.tags_available">Tags available:</span> <span id="editor-text-student-tag-list"></span>
+						<div class="editor-text-modal-buttons">
+							<button class="editor-text-button editor-text-button-action" id="editor-text-indentation-reset">
+								<span>🔄</span> <span data-i18n="text_editor.indentation_reset">Reset to Default</span>
+							</button>
+							<button class="editor-text-button editor-text-button-save" id="editor-text-indentation-save">
+								<span>💾</span> <span data-i18n="text_editor.indentation_save">Save Settings</span>
+							</button>
+							<button class="editor-text-button editor-text-button-cancel" id="editor-text-indentation-cancel">
+								<span>✖️</span> <span data-i18n="text_editor.indentation_cancel">Cancel</span>
+							</button>
 						</div>
 					</div>
 				</div>
-				<div class="editor-text-options">
-					<div class="editor-text-option" data-i18n="text_editor.option_preview">👁️ Preview</div>
-					<div class="editor-text-option" data-i18n="text_editor.option_guides">📖 Guides</div>
-					<div class="editor-text-option" data-i18n="text_editor.option_templates">📋 Templates</div>
-					<div class="editor-text-option" data-action="clear" data-i18n="text_editor.clear_button">🧹 Clear</div>
+			</div>
+		</div>
+		<!-- Student Tab -->
+		<div class="editor-text-tab-content" id="student-tab">
+			<h2 class="editor-text-section-title" data-i18n="text_editor.student_title">Content Creation</h2>
+			<div class="editor-text-dictionary">
+				<div class="editor-text-dictionary-header">
+					<div class="editor-text-dictionary-title" data-i18n="text_editor.dictionary">Dictionary</div>
+					<div class="editor-text-icon">▼</div>
 				</div>
-				<div class="editor-text-main">
-					<div class="editor-text-aside">
-						<div class="editor-text-aside-title" data-i18n="text_editor.available_tags">Available Tags</div>
-						<div class="editor-text-tags-container" id="editor-text-tag-container">
-							<!-- Tags will be dynamically inserted here -->
-						</div>
+				<div class="editor-text-dictionary-content">
+					<p data-i18n="text_editor.student_dictionary_content">Use the defined tags to create your scenario content. Click on a tag in the sidebar to insert it.</p>
+					<div class="editor-text-status">
+						<span data-i18n="text_editor.tags_available">Tags available:</span> <span id="editor-text-student-tag-list"></span>
 					</div>
-					<div class="editor-text-editor">
-						<div class="editor-text-line-numbers" id="editor-text-line-numbers"></div>
-						<div class="editor-text-textarea" id="editor-text-student-display" contenteditable="true">
-						</div>
-					</div>
-				</div>
-				<div class="editor-text-buttons">
-					<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.undo">↩️ Undo</button>
-					<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.redo">↪️ Redo</button>
 				</div>
 			</div>
-			<!-- Tester Tab -->
-			<div class="editor-text-tab-content" id="tester-tab">
-				<h2 class="editor-text-section-title" data-i18n="text_editor.tester_title">File Validation</h2>
-				<div class="editor-text-dictionary">
-					<div class="editor-text-dictionary-header">
-						<div class="editor-text-dictionary-title" data-i18n="text_editor.dictionary">Dictionary</div>
-						<div class="editor-text-icon">▼</div>
-					</div>
-					<div class="editor-text-dictionary-content">
-						<p data-i18n="text_editor.tester_dictionary_content">Validate your scenario files and check for errors or inconsistencies.</p>
-						<div class="editor-text-status">
-							<span data-i18n="text_editor.last_validation">Last validation:</span> <span id="editor-text-validation-result" data-i18n="text_editor.no_validation">No validation performed yet</span>
-						</div>
+			<div class="editor-text-options">
+				<div class="editor-text-option" data-i18n="text_editor.option_preview">👁️ Preview</div>
+				<div class="editor-text-option" data-i18n="text_editor.option_guides">📖 Guides</div>
+				<div class="editor-text-option" data-i18n="text_editor.option_templates">📋 Templates</div>
+				<div class="editor-text-option" data-action="clear" data-i18n="text_editor.clear_button">🧹 Clear</div>
+			</div>
+			<div class="editor-text-main">
+				<div class="editor-text-aside">
+					<div class="editor-text-aside-title" data-i18n="text_editor.available_tags">Available Tags</div>
+					<div class="editor-text-tags-container" id="editor-text-tag-container">
+						<!-- Tags will be dynamically inserted here -->
 					</div>
 				</div>
-				<div class="editor-text-options">
-					<div class="editor-text-option" data-i18n="text_editor.option_lint">🧹 Lint</div>
-					<div class="editor-text-option" data-i18n="text_editor.option_simulate">▶️ Simulate</div>
-					<div class="editor-text-option" data-i18n="text_editor.option_debug">🐞 Debug</div>
-					<div class="editor-text-option" data-i18n="text_editor.option_stats">📊 Stats</div>
-				</div>
-				<textarea class="editor-text-textarea" id="editor-text-tester-input" placeholder="[part]&#10;story=&quot;Once upon a time...&quot;&#10;image=&quot;images/story.jpg&quot;&#10;[/part]&#10;&#10;[event]&#10;name=&quot;First Encounter&quot;&#10;description=&quot;The heroes meet their first challenge&quot;&#10;trigger=&quot;turn 2&quot;&#10;[/event]" data-i18n-placeholder="text_editor.tester_placeholder"></textarea>
-				<div class="editor-text-buttons">
-					<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.undo">↩️ Undo</button>
-					<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.redo">↪️ Redo</button>
+				<div class="editor-text-editor">
+					<div class="editor-text-line-numbers" id="editor-text-line-numbers"></div>
+					<div class="editor-text-textarea" id="editor-text-student-display" contenteditable="true">
+					</div>
 				</div>
 			</div>
-			<div class="editor-text-footer" data-i18n="text_editor.footer">
-				Wesnoth File Editor v1.0 • Battle For Wesnoth • All tags and properties are preserved
+			<div class="editor-text-buttons">
+				<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.undo">↩️ Undo</button>
+				<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.redo">↪️ Redo</button>
 			</div>
+		</div>
+		<!-- Tester Tab -->
+		<div class="editor-text-tab-content" id="tester-tab">
+			<h2 class="editor-text-section-title" data-i18n="text_editor.tester_title">File Validation</h2>
+			<div class="editor-text-dictionary">
+				<div class="editor-text-dictionary-header">
+					<div class="editor-text-dictionary-title" data-i18n="text_editor.dictionary">Dictionary</div>
+					<div class="editor-text-icon">▼</div>
+				</div>
+				<div class="editor-text-dictionary-content">
+					<p data-i18n="text_editor.tester_dictionary_content">Validate your scenario files and check for errors or inconsistencies.</p>
+					<div class="editor-text-status">
+						<span data-i18n="text_editor.last_validation">Last validation:</span> <span id="editor-text-validation-result" data-i18n="text_editor.no_validation">No validation performed yet</span>
+					</div>
+				</div>
+			</div>
+			<div class="editor-text-options">
+				<div class="editor-text-option" data-i18n="text_editor.option_lint">🧹 Lint</div>
+				<div class="editor-text-option" data-i18n="text_editor.option_simulate">▶️ Simulate</div>
+				<div class="editor-text-option" data-i18n="text_editor.option_debug">🐞 Debug</div>
+				<div class="editor-text-option" data-i18n="text_editor.option_stats">📊 Stats</div>
+			</div>
+			<textarea class="editor-text-textarea" id="editor-text-tester-input" placeholder="[part]&#10;story=&quot;Once upon a time...&quot;&#10;image=&quot;images/story.jpg&quot;&#10;[/part]&#10;&#10;[event]&#10;name=&quot;First Encounter&quot;&#10;description=&quot;The heroes meet their first challenge&quot;&#10;trigger=&quot;turn 2&quot;&#10;[/event]" data-i18n-placeholder="text_editor.tester_placeholder"></textarea>
+			<div class="editor-text-buttons">
+				<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.undo">↩️ Undo</button>
+				<button class="editor-text-button editor-text-button-action" data-i18n="text_editor.redo">↪️ Redo</button>
+			</div>
+		</div>
+		<div class="editor-text-footer" data-i18n="text_editor.footer">
+			Wesnoth File Editor v1.0 • Battle For Wesnoth • All tags and properties are preserved
+		</div>
 		</div>
 		<!-- <script>
 			if ('serviceWorker' in navigator) {
