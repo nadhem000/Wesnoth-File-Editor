@@ -1,6 +1,11 @@
 // ====================
 // GLOBAL VARIABLES
 // ====================
+let tagFilter = 'all';
+const tagUsageTracker = {
+    counts: {},
+    timestamps: {}
+};
 /**
 	* Stores the tag name during save confirmation
 	* @type {?string}
@@ -163,7 +168,35 @@ function updateStudentTagList() {
         const container = document.getElementById('editor-text-tag-container');
         container.innerHTML = '';
         const tags = getTagDefinitions();
-        Object.keys(tags).forEach(tag => {
+        // Get usage data from localStorage
+        const savedUsage = localStorage.getItem('editor-text-tag-usage');
+        if (savedUsage) {
+            Object.assign(tagUsageTracker, JSON.parse(savedUsage));
+        }
+        
+        // Sort tags based on filter
+        const sortedTags = Object.keys(tags).sort((a, b) => {
+            switch (tagFilter) {
+                case 'popular':
+                    const countA = tagUsageTracker.counts[a] || 0;
+                    const countB = tagUsageTracker.counts[b] || 0;
+                    return countB - countA;
+                
+                case 'recent':
+                    const timeA = tagUsageTracker.timestamps[a] || 0;
+                    const timeB = tagUsageTracker.timestamps[b] || 0;
+                    return timeB - timeA;
+                
+                case 'alpha':
+                    return a.localeCompare(b);
+                
+                default: // 'all'
+                    return 0;
+            }
+        });
+        
+        // Use the sortedTags array to display tags
+        sortedTags.forEach(tag => {
             tags[tag].forEach((definition, index) => {
                 const item = document.createElement('div');
                 item.className = 'editor-text-aside-item';
@@ -180,19 +213,19 @@ function updateStudentTagList() {
                         this.style.backgroundColor = 'var(--editor-text-tab-active-bg)';
                         setTimeout(() => {
                             this.style.backgroundColor = '';
-						}, 500);
-						} catch (error) {
+                        }, 500);
+                    } catch (error) {
                         console.error('Error inserting tag template:', error);
                         alert(i18n.t('text_editor.insert_tag_error') || 'Error inserting tag');
-					}
-				});
+                    }
+                });
                 container.appendChild(item);
-			});
-		});
-		} catch (error) {
+            });
+        });
+    } catch (error) {
         console.error('Error updating student tag list:', error);
         alert(i18n.t('text_editor.student_tag_error') || 'Error updating student tag list');
-	}
+    }
 }
 // ====================
 // EDITOR OPERATIONS
@@ -252,6 +285,8 @@ function insertTagTemplate(tag, definition, cursorPosition) {
             editor.appendChild(tagContainer);
         }
 
+        // Update usage tracking
+        updateTagUsage(tag);
         const newCursorPosition = cursorPosition + tagContent.length;
         setCursorPosition(editor, newCursorPosition);
         applyColorHighlighting(editor);
@@ -260,6 +295,20 @@ function insertTagTemplate(tag, definition, cursorPosition) {
         console.error('Error inserting tag template:', error);
         alert(i18n.t('text_editor.insert_template_error') || 'Error inserting tag template');
     }
+}
+// Add new function to track tag usage
+function updateTagUsage(tagName) {
+    // Update count
+    if (!tagUsageTracker.counts[tagName]) {
+        tagUsageTracker.counts[tagName] = 0;
+    }
+    tagUsageTracker.counts[tagName]++;
+    
+    // Update timestamp
+    tagUsageTracker.timestamps[tagName] = Date.now();
+    
+    // Save to localStorage
+    localStorage.setItem('editor-text-tag-usage', JSON.stringify(tagUsageTracker));
 }
 /**
  * Formats content by applying proper indentation levels based on tag structure
@@ -740,43 +789,82 @@ function createKeyRow() {
     keyRow.innerHTML = `
     <div class="editor-text-form-group">
         <label data-i18n="text_editor.key_name_label"></label>
-        <input type="text" class="editor-text-key-name" placeholder="${i18n.t('text_editor.key_name_placeholder') || 'key_name'}">
+        <input type="text" class="editor-text-key-name" placeholder="key_name">
     </div>
     <div class="editor-text-form-group">
         <label data-i18n="text_editor.key_default_label"></label>
-        <input type="text" class="editor-text-key-default" placeholder="${i18n.t('text_editor.default_value_placeholder') || '""'}">
+        <input type="text" class="editor-text-key-default" placeholder='""'>
     </div>
     <div class="editor-text-form-group">
         <label data-i18n="text_editor.key_type_label"></label>
         <select class="editor-text-key-type">
-            <option value="string" data-i18n="text_editor.type_string"></option>
-            <option value="translatable" data-i18n="text_editor.type_translatable"></option>
-            <option value="integer" data-i18n="text_editor.type_integer"></option>
-            <option value="numeric" data-i18n="text_editor.type_numeric"></option>
-            <option value="boolean" data-i18n="text_editor.type_boolean"></option>
-            <option value="path" data-i18n="text_editor.type_path"></option>
+            <option value="string">String</option>
+            <option value="translatable">Translatable String</option>
+            <option value="integer">Integer</option>
+            <option value="numeric">Numeric</option>
+            <option value="boolean">Boolean</option>
+            <option value="path">Path</option>
         </select>
     </div>
     <div class="editor-text-form-group">
         <label data-i18n="text_editor.key_mandatory_label"></label>
         <select class="editor-text-key-mandatory">
-            <option value="mandatory" selected data-i18n="text_editor.mandatory"></option>
-            <option value="optional" data-i18n="text_editor.optional"></option>
+            <option value="mandatory">Mandatory</option>
+            <option value="optional">Optional</option>
         </select>
     </div>
     <div class="editor-text-form-group">
         <label data-i18n="text_editor.key_scope_label"></label>
         <select class="editor-text-key-scope">
-            <option value="official" selected data-i18n="text_editor.official"></option>
-            <option value="umc" data-i18n="text_editor.umc"></option>
+            <option value="official">Official</option>
+            <option value="umc">UMC</option>
         </select>
     </div>
     <div class="editor-text-form-group">
         <label data-i18n="text_editor.key_comment_label"></label>
-        <input type="text" class="editor-text-key-comment" placeholder="${i18n.t('text_editor.comment_placeholder') || 'Comment (optional)'}">
+        <input type="text" class="editor-text-key-comment" placeholder="Comment (optional)">
     </div>
     <button class="editor-text-remove-key" data-i18n="text_editor.remove_key">×</button>
     `;
+    
+    // Translate static elements
+    translateElement(keyRow);
+    
+    // Add this translation logic for dropdown options:
+    const translateOptions = (select, values) => {
+        Array.from(select.options).forEach(option => {
+            option.textContent = i18n.t(`text_editor.${values[option.value]}`);
+        });
+    };
+    
+    translateOptions(
+        keyRow.querySelector('.editor-text-key-type'),
+        {
+            string: 'type_string',
+            translatable: 'type_translatable',
+            integer: 'type_integer',
+            numeric: 'type_numeric',
+            boolean: 'type_boolean',
+            path: 'type_path'
+        }
+    );
+    
+    translateOptions(
+        keyRow.querySelector('.editor-text-key-mandatory'),
+        {
+            mandatory: 'mandatory',
+            optional: 'optional'
+        }
+    );
+    
+    translateOptions(
+        keyRow.querySelector('.editor-text-key-scope'),
+        {
+            official: 'official',
+            umc: 'umc'
+        }
+    );
+    
     return keyRow;
 }
 /**
@@ -919,6 +1007,7 @@ function attachEditDeleteHandlers() {
                 definition.keys.forEach(key => {
                     const keyRow = createKeyRow();
                     keysContainer.appendChild(keyRow);
+        translateElement(keyRow);
                     keyRow.querySelector('.editor-text-key-name').value = key.name;
                     keyRow.querySelector('.editor-text-key-default').value = key.defaultValue;
                     keyRow.querySelector('.editor-text-key-type').value = key.type;
@@ -1221,6 +1310,162 @@ function getIndentString(level) {
     }
 }
 // ====================
+// COMMENT FUNCTIONS
+// ====================
+/**
+ * Comments selected lines in student editor
+ * @version v0.4
+ */
+function commentSelectedLines() {
+    try {
+        const editor = document.getElementById('editor-text-student-display');
+        const selection = window.getSelection();
+        
+        if (selection.rangeCount === 0) return;
+        
+        const range = selection.getRangeAt(0);
+        // Save cursor position
+        const cursorPosition = saveCursorPositionAsIndex();
+        
+        // Get all text nodes in range
+        const textNodes = getTextNodesInRange(range);
+        if (textNodes.length === 0) return;
+        
+        // Get start and end nodes
+        const startNode = textNodes[0];
+        const endNode = textNodes[textNodes.length - 1];
+        const startOffset = range.startOffset;
+        const endOffset = range.endOffset;
+        
+        // Split start node if needed
+        if (startOffset > 0) {
+            const newStartNode = startNode.splitText(startOffset);
+            textNodes[0] = newStartNode;
+        }
+        
+        // Split end node if needed
+        if (endOffset < endNode.length) {
+            endNode.splitText(endOffset);
+        }
+        
+        // Process ALL text nodes in the selection
+        textNodes.forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                const lines = node.textContent.split('\n');
+                const newLines = lines.map(line => `# ${line}`);
+                node.textContent = newLines.join('\n');
+            }
+        });
+        
+        // Restore cursor position
+        restoreCursorPositionFromIndex(cursorPosition);
+        applyColorHighlighting(editor);
+        updateLineNumbers();
+    } catch (error) {
+        console.error('Error commenting lines:', error);
+        alert(i18n.t('text_editor.comment_error') || 'Error commenting selected lines');
+    }
+}
+
+/**
+ * Uncomments selected lines in student editor
+ * @version v0.4
+ */
+function uncommentSelectedLines() {
+    try {
+        const editor = document.getElementById('editor-text-student-display');
+        const selection = window.getSelection();
+        
+        if (selection.rangeCount === 0) return;
+        
+        const range = selection.getRangeAt(0);
+        // Save cursor position
+        const cursorPosition = saveCursorPositionAsIndex();
+        
+        // Get all text nodes in range
+        const textNodes = getTextNodesInRange(range);
+        if (textNodes.length === 0) return;
+        
+        // Get start and end nodes
+        const startNode = textNodes[0];
+        const endNode = textNodes[textNodes.length - 1];
+        const startOffset = range.startOffset;
+        const endOffset = range.endOffset;
+        
+        // Split start node if needed
+        if (startOffset > 0) {
+            const newStartNode = startNode.splitText(startOffset);
+            textNodes[0] = newStartNode;
+        }
+        
+        // Split end node if needed
+        if (endOffset < endNode.length) {
+            endNode.splitText(endOffset);
+        }
+        
+        // Process ALL text nodes in the selection
+        let totalRemoved = 0;
+        textNodes.forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                const lines = node.textContent.split('\n');
+                const newLines = lines.map(line => {
+                    if (line.startsWith('# ')) {
+                        totalRemoved += 2;
+                        return line.substring(2);
+                    } else if (line.startsWith('#')) {
+                        totalRemoved += 1;
+                        return line.substring(1);
+                    }
+                    return line;
+                });
+                node.textContent = newLines.join('\n');
+            }
+        });
+        
+        // Restore cursor position
+        restoreCursorPositionFromIndex(Math.max(0, cursorPosition - totalRemoved));
+        applyColorHighlighting(editor);
+        updateLineNumbers();
+    } catch (error) {
+        console.error('Error uncommenting lines:', error);
+        alert(i18n.t('text_editor.uncomment_error') || 'Error uncommenting selected lines');
+    }
+}
+
+/**
+ * Gets text nodes in selection range
+ * @param {Range} range - Selection range
+ * @returns {Node[]} Array of text nodes
+ * @version v0.4
+ */
+function getTextNodesInRange(range) {
+    const startContainer = range.startContainer;
+    const endContainer = range.endContainer;
+    let currentNode = startContainer;
+    const textNodes = [];
+    
+    // Traverse nodes in range
+    while (currentNode) {
+        if (currentNode.nodeType === Node.TEXT_NODE) {
+            textNodes.push(currentNode);
+        }
+        
+        if (currentNode === endContainer) break;
+        
+        // Move to next node
+        if (currentNode.childNodes.length > 0) {
+            currentNode = currentNode.firstChild;
+        } else {
+            while (currentNode && !currentNode.nextSibling && currentNode !== endContainer) {
+                currentNode = currentNode.parentNode;
+            }
+            if (currentNode) currentNode = currentNode.nextSibling;
+        }
+    }
+    
+    return textNodes;
+}
+// ====================
 // HELPERS UTILS
 // ====================
 // Track editor focus state
@@ -1277,64 +1522,30 @@ document.querySelectorAll('.editor-text-tab').forEach(tab => {
 document.getElementById('editor-text-add-key').addEventListener('click', function() {
     try {
         const keysContainer = document.getElementById('editor-text-keys-container');
-        const keyRow = document.createElement('div');
-        keyRow.className = 'editor-text-key-row';
-        keyRow.innerHTML = `
-		<div class="editor-text-form-group">
-		<label data-i18n="text_editor.key_name_label"></label>
-		<input type="text" class="editor-text-key-name" placeholder="${i18n.t('text_editor.key_name_placeholder')}">
-		</div>
-		<div class="editor-text-form-group">
-		<label data-i18n="text_editor.key_default_label"></label>
-		<input type="text" class="editor-text-key-default" placeholder="${i18n.t('text_editor.default_value_placeholder')}">
-		</div>
-		<div class="editor-text-form-group">
-		<label data-i18n="text_editor.key_type_label"></label>
-		<select class="editor-text-key-type">
-		<option value="string" data-i18n="text_editor.type_string"></option>
-		<option value="translatable" data-i18n="text_editor.type_translatable"></option>
-		<option value="integer" data-i18n="text_editor.type_integer"></option>
-		<option value="numeric" data-i18n="text_editor.type_numeric"></option>
-		<option value="boolean" data-i18n="text_editor.type_boolean"></option>
-		<option value="path" data-i18n="text_editor.type_path"></option>
-		</select>
-		</div>
-		<div class="editor-text-form-group">
-		<label data-i18n="text_editor.key_mandatory_label"></label>
-		<select class="editor-text-key-mandatory">
-		<option value="mandatory" selected data-i18n="text_editor.mandatory"></option>
-		<option value="optional" data-i18n="text_editor.optional"></option>
-		</select>
-		</div>
-		<div class="editor-text-form-group">
-		<label data-i18n="text_editor.key_scope_label"></label>
-		<select class="editor-text-key-scope">
-		<option value="official" selected data-i18n="text_editor.official"></option>
-		<option value="umc" data-i18n="text_editor.umc"></option>
-		</select>
-		</div>
-		<button class="editor-text-remove-key">×</button>
-        `;
+        // Use createKeyRow function which handles translation
+        const keyRow = createKeyRow();
         keysContainer.appendChild(keyRow);
+
         // Add event listener to remove button
         keyRow.querySelector('.editor-text-remove-key').addEventListener('click', function() {
             try {
                 keysContainer.removeChild(keyRow);
                 updateTagPreview();
-				} catch (error) {
+            } catch (error) {
                 console.error(i18n.t('text_editor.error_removing_key'), error);
                 alert(error.message || i18n.t('text_editor.error_removing_key'));
-			}
-		});
+            }
+        });
+
         // Add input listeners for live preview
         const inputs = keyRow.querySelectorAll('input, select');
         inputs.forEach(input => {
             input.addEventListener('input', updateTagPreview);
-		});
-		} catch (error) {
+        });
+    } catch (error) {
         console.error(i18n.t('text_editor.error_adding_key'), error);
         alert(error.message || i18n.t('text_editor.error_adding_key'));
-	}
+    }
 });
 // Remove key functionality
 document.querySelectorAll('.editor-text-remove-key').forEach(button => {
@@ -1517,20 +1728,23 @@ document.getElementById('editor-text-parse-btn').addEventListener('click', funct
 // ====================
 // INDENTATION SETTINGS
 // ====================
-document.querySelector('.editor-text-option[data-i18n="text_editor.option_indentation"]').addEventListener('click', function() {
-    try {
-        const settings = getIndentationSettings();
-        const modal = document.getElementById('editor-text-indentation-modal');
-        // Set current values
-        document.querySelector(`input[name="indent-method"][value="${settings.method}"]`).checked = true;
-        document.getElementById('editor-text-indent-size').value = settings.spaceSize;
-        document.getElementById('editor-text-tab-count').value = settings.tabCount;
-        modal.style.display = 'flex';
-		} catch (error) {
-        console.error(i18n.t('text_editor.error_opening_indentation'), error);
-        alert(i18n.t('text_editor.error_opening_indentation') + ': ' + error.message);
-	}
-});
+const indentationOption = document.querySelector('[data-i18n="text_editor.option_indentation"]')?.closest('.editor-text-option');
+        if (indentationOption) {
+            indentationOption.addEventListener('click', function() {
+                try {
+                    const settings = getIndentationSettings();
+                    const modal = document.getElementById('editor-text-indentation-modal');
+                    // Set current values
+                    document.querySelector(`input[name="indent-method"][value="${settings.method}"]`).checked = true;
+                    document.getElementById('editor-text-indent-size').value = settings.spaceSize;
+                    document.getElementById('editor-text-tab-count').value = settings.tabCount;
+                    modal.style.display = 'flex';
+                } catch (error) {
+                    console.error(i18n.t('text_editor.error_opening_indentation'), error);
+                    alert(i18n.t('text_editor.error_opening_indentation') + ': ' + error.message);
+                }
+            });
+        }
 // Save indentation settings
 document.getElementById('editor-text-indentation-save').addEventListener('click', function() {
     try {
@@ -1711,31 +1925,34 @@ document.getElementById('editor-text-save-entry-btn').addEventListener('click', 
 // ====================
 // COLOR SETTINGS
 // ====================
-document.querySelector('.editor-text-option[data-i18n="text_editor.option_color"]').addEventListener('click', function() {
-    try {
-        const settings = getStyleSettings();
-        // Set color pickers
-        document.querySelectorAll('.editor-text-color-picker').forEach(picker => {
-            const type = picker.dataset.type;
-            picker.value = settings.colors[type] || '#000000';
-		});
-        // Set bold checkboxes
-        document.querySelectorAll('.editor-text-bold-checkbox').forEach(checkbox => {
-            const mandatory = checkbox.dataset.mandatory;
-            checkbox.checked = settings.bold[mandatory] || false;
-		});
-        // Set italic checkboxes
-        document.querySelectorAll('.editor-text-italic-checkbox').forEach(checkbox => {
-            const scope = checkbox.dataset.scope;
-            checkbox.checked = settings.italic[scope] || false;
-		});
-        // Show modal
-        document.getElementById('editor-text-color-modal').style.display = 'flex';
-		} catch (error) {
-        console.error(i18n.t('text_editor.error_opening_styles'), error);
-        alert(i18n.t('text_editor.error_opening_styles') + ': ' + error.message);
-	}
-});
+const colorOption = document.querySelector('[data-i18n="text_editor.option_color"]')?.closest('.editor-text-option');
+        if (colorOption) {
+            colorOption.addEventListener('click', function() {
+                try {
+                    const settings = getStyleSettings();
+                    // Set color pickers
+                    document.querySelectorAll('.editor-text-color-picker').forEach(picker => {
+                        const type = picker.dataset.type;
+                        picker.value = settings.colors[type] || '#000000';
+                    });
+                    // Set bold checkboxes
+                    document.querySelectorAll('.editor-text-bold-checkbox').forEach(checkbox => {
+                        const mandatory = checkbox.dataset.mandatory;
+                        checkbox.checked = settings.bold[mandatory] || false;
+                    });
+                    // Set italic checkboxes
+                    document.querySelectorAll('.editor-text-italic-checkbox').forEach(checkbox => {
+                        const scope = checkbox.dataset.scope;
+                        checkbox.checked = settings.italic[scope] || false;
+                    });
+                    // Show modal
+                    document.getElementById('editor-text-color-modal').style.display = 'flex';
+                } catch (error) {
+                    console.error(i18n.t('text_editor.error_opening_styles'), error);
+                    alert(i18n.t('text_editor.error_opening_styles') + ': ' + error.message);
+                }
+            });
+        }
 // Color modal actions
 document.getElementById('editor-text-color-save').addEventListener('click', function() {
     try {
@@ -1837,6 +2054,37 @@ function handleTranslations() {
         if (!key) return;
         
         const translation = i18n.t(key);
+        
+        // Preserve child elements while translating
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.placeholder = translation;
+        } else {
+            // Find the first text node to replace
+            let textNodeFound = false;
+            Array.from(el.childNodes).forEach(child => {
+                if (child.nodeType === Node.TEXT_NODE && child.textContent.trim()) {
+                    child.textContent = translation;
+                    textNodeFound = true;
+                }
+            });
+            
+            // If no text node found, create one
+            if (!textNodeFound) {
+                const textNode = document.createTextNode(translation);
+                el.appendChild(textNode);
+            }
+        }
+    });
+}
+// ====================
+// TRANSLATION HELPER
+// ====================
+function translateElement(element) {
+    element.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (!key) return;
+        
+        const translation = i18n.t(key);
         if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
             el.placeholder = translation;
         } else {
@@ -1898,6 +2146,28 @@ document.addEventListener('DOMContentLoaded', function() {
         editor.addEventListener('keyup', saveCursorPosition);
         editor.addEventListener('mouseup', saveCursorPosition);
         updateLineNumbers();
+document.querySelectorAll('.editor-text-filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        // Remove active class from all buttons
+        document.querySelectorAll('.editor-text-filter-btn').forEach(b => {
+            b.classList.remove('editor-text-active');
+        });
+        
+        // Add active class to clicked button
+        this.classList.add('editor-text-active');
+        
+        // Set new filter
+        tagFilter = this.dataset.filter;
+        
+        // Update tag list with new filter
+        updateStudentTagList();
+    });
+});
+// Comment functionality
+document.querySelector('.editor-text-option[data-action="comment"]').addEventListener('click', commentSelectedLines);
+
+// Uncomment functionality
+document.querySelector('.editor-text-option[data-action="uncomment"]').addEventListener('click', uncommentSelectedLines);
 		} catch (error) {
         console.error(i18n.t('text_editor.error_initializing'), error);
         alert(i18n.t('text_editor.error_initializing') + ': ' + error.message);

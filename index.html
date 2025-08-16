@@ -62,45 +62,46 @@
 			</div>
 			<div class="editor-text-tab-content editor-text-active" id="teacher-tab">
 				<div class="editor-text-options">
-					<div class="editor-text-option" data-i18n="text_editor.option_color">
-						<span>🎨</span> <span data-i18n="text_editor.option_color">Color</span>
+					<div class="editor-text-option">
+						<span>🎨</span>
+						<span data-i18n="text_editor.option_color">Color</span>
 						<div class="editor-text-tooltip" data-i18n="text_editor.tooltip_color">Change editor color scheme</div>
 					</div>
-					<div class="editor-text-option" data-i18n="text_editor.option_indentation">
+					<div class="editor-text-option">
 						<span>↹</span> <span data-i18n="text_editor.option_indentation">Indentation</span>
 						<div class="editor-text-tooltip" data-i18n="text_editor.tooltip_indentation">Adjust indentation settings</div>
 					</div>
-					<div class="editor-text-option" id="editor-text-export-option" data-i18n="text_editor.option_export">
+					<div class="editor-text-option" id="editor-text-export-option">
 						<span>💾</span> <span data-i18n="text_editor.option_export">Export</span> <span>▾</span>
 						<div class="editor-text-tooltip" data-i18n="text_editor.tooltip_export">Export your tag definitions</div>
 						<div class="editor-text-dropdown">
-							<div class="editor-text-dropdown-item" data-format="cfg" data-i18n="text_editor.export_cfg">
+							<div class="editor-text-dropdown-item" data-format="cfg">
 								<span>📄</span> <span data-i18n="text_editor.export_cfg">.cfg</span>
 							</div>
-							<div class="editor-text-dropdown-item" data-format="json" data-i18n="text_editor.export_json">
+							<div class="editor-text-dropdown-item" data-format="json">
 								<span>📊</span> <span data-i18n="text_editor.export_json">.json</span>
 							</div>
-							<div class="editor-text-dropdown-item" data-format="txt" data-i18n="text_editor.export_txt">
+							<div class="editor-text-dropdown-item" data-format="txt">
 								<span>📝</span> <span data-i18n="text_editor.export_txt">.txt</span>
 							</div>
 						</div>
 					</div>
-					<div class="editor-text-option" id="editor-text-import-option" data-i18n="text_editor.option_import">
+					<div class="editor-text-option" id="editor-text-import-option">
 						<span>📂</span> <span data-i18n="text_editor.option_import">Import</span> <span>▾</span>
 						<div class="editor-text-tooltip" data-i18n="text_editor.tooltip_import">Import tag definitions</div>
 						<div class="editor-text-dropdown">
-							<div class="editor-text-dropdown-item" data-format="cfg" data-i18n="text_editor.import_cfg">
+							<div class="editor-text-dropdown-item" data-format="cfg">
 								<span>📄</span> <span data-i18n="text_editor.import_cfg">.cfg</span>
 							</div>
-							<div class="editor-text-dropdown-item" data-format="json" data-i18n="text_editor.import_json">
+							<div class="editor-text-dropdown-item" data-format="json">
 								<span>📊</span> <span data-i18n="text_editor.import_json">.json</span>
 							</div>
-							<div class="editor-text-dropdown-item" data-format="txt" data-i18n="text_editor.import_txt">
+							<div class="editor-text-dropdown-item" data-format="txt">
 								<span>📝</span> <span data-i18n="text_editor.import_txt">.txt</span>
 							</div>
 						</div>
 					</div>
-					<div class="editor-text-option" data-i18n="text_editor.option_settings">
+					<div class="editor-text-option">
 						<span>⚙️</span> <span data-i18n="text_editor.option_settings">Settings</span>
 						<div class="editor-text-tooltip" data-i18n="text_editor.tooltip_settings">Editor preferences</div>
 					</div>
@@ -491,13 +492,24 @@
 				<div class="editor-text-option" data-i18n="text_editor.option_guides">📖 Guides</div>
 				<div class="editor-text-option" data-i18n="text_editor.option_templates">📋 Templates</div>
 				<div class="editor-text-option" data-action="clear" data-i18n="text_editor.clear_button">🧹 Clear</div>
+<div class="editor-text-option" data-action="comment" data-i18n="text_editor.option_comment">💬 Comment</div>
+<div class="editor-text-option" data-action="uncomment" data-i18n="text_editor.option_uncomment">🗨️ Uncomment</div>
 			</div>
 			<div class="editor-text-main">
 				<div class="editor-text-aside">
 					<div class="editor-text-aside-title" data-i18n="text_editor.available_tags">Available Tags</div>
-					<div class="editor-text-tags-container" id="editor-text-tag-container">
-						<!-- Tags will be dynamically inserted here -->
-					</div>
+    <!-- ADD FILTER BUTTONS -->
+    <div class="editor-text-tag-filters">
+    <button class="editor-text-filter-btn editor-text-active" data-filter="all" data-i18n="text_editor.filter_all">All</button>
+    <button class="editor-text-filter-btn" data-filter="popular" data-i18n="text_editor.filter_popular">Popular</button>
+    <button class="editor-text-filter-btn" data-filter="recent" data-i18n="text_editor.filter_recent">Recent</button>
+    <button class="editor-text-filter-btn" data-filter="alpha" data-i18n="text_editor.filter_alpha">A-Z</button>
+</div>
+					<div class="editor-text-tags-scroll-container">
+        <div class="editor-text-tags-container" id="editor-text-tag-container">
+            <!-- Tags will be dynamically inserted here -->
+        </div>
+    </div>
 				</div>
 				<div class="editor-text-editor">
 					<div class="editor-text-line-numbers" id="editor-text-line-numbers"></div>
@@ -540,6 +552,7 @@
 		<div class="editor-text-footer" data-i18n="text_editor.footer">
 			Wesnoth File Editor v1.0 • Battle For Wesnoth • All tags and properties are preserved
 		</div>
+	</div>
 		</div>
 		<!-- <script>
 			if ('serviceWorker' in navigator) {

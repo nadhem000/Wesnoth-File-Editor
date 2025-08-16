@@ -1067,6 +1067,18 @@ body {
     animation: editor-text-fadeIn 0.3s ease;
 }
 
+#editor-text-color-modal .editor-text-modal-content {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+@media (max-height: 600px) {
+    .editor-text-modal-content {
+        max-height: 90vh;
+    }
+    .editor-text-style-container {
+        max-height: 70vh;
+    }
+}
 .editor-text-modal-content {
     background-color: var(--editor-text-editor-bg);
     border-radius: var(--editor-text-radius);
@@ -1221,6 +1233,9 @@ body {
     flex-direction: column;
     gap: 15px;
     margin-top: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 10px;
 }
 
 .editor-text-style-container h4 {
@@ -1231,12 +1246,13 @@ body {
 }
 
 .editor-text-style-item {
-    padding: 10px;
     background-color: white;
     border-radius: 6px;
     border: 1px solid var(--editor-text-border-color);
     display: flex;
     align-items: center;
+    padding: 8px 10px;
+    margin-bottom: 8px;
 }
 
 .editor-text-style-item label {
@@ -1251,4 +1267,57 @@ body {
     border: 1px solid var(--editor-text-border-color);
     border-radius: 4px;
     font-family: inherit;
+}
+.editor-text-tag-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.editor-text-filter-btn {
+    padding: 8px 12px;
+    border-radius: 16px;
+    border: 1px solid var(--editor-text-border-color);
+    background-color: var(--editor-text-editor-bg);
+    color: var(--editor-text-text-medium);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--editor-text-transition);
+    white-space: nowrap;
+}
+
+.editor-text-filter-btn:hover {
+    background-color: var(--editor-text-tab-active-bg);
+}
+
+.editor-text-filter-btn.editor-text-active {
+    background-color: var(--editor-text-accent-color);
+    color: white;
+    border-color: var(--editor-text-accent-color);
+}
+
+.editor-text-tags-scroll-container {
+    max-height: 450px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Scrollbar styling */
+.editor-text-tags-scroll-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.editor-text-tags-scroll-container::-webkit-scrollbar-track {
+    background: var(--editor-text-aside-bg);
+    border-radius: 4px;
+}
+
+.editor-text-tags-scroll-container::-webkit-scrollbar-thumb {
+    background: var(--editor-text-text-light);
+    border-radius: 4px;
+}
+
+.editor-text-tags-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: var(--editor-text-accent-color);
 }
